@@ -1,0 +1,36 @@
+Copyright and licence
+=====================
+
+This guide is two things in one file: code you are meant to take, and text that
+explains it. They are not covered by the same terms.
+
+
+Code — Apache License 2.0
+-------------------------
+
+Every fenced code block and every file listing in this guide is licensed under
+the Apache License, Version 2.0. Its text is in LICENSE, next to this file.
+
+That means you may use them in any project, including a commercial one, under
+the terms of that licence and with no further permission. This is the whole
+point of the guide: the code is there to be typed, copied and built on.
+
+
+Text — all rights reserved
+--------------------------
+
+Copyright 2026 Hugo Alberto Garcia.
+
+The prose of this guide — the chapters' explanations, their structure and their
+wording — is not licensed for reuse.
+
+Reading it, following it, linking to it, and viewing or forking this repository
+on GitHub are all fine and always will be.
+
+
+To reuse the text, please ask
+-----------------------------
+
+To mirror a chapter elsewhere, translate it, include it in other documentation,
+or use it in teaching material, open an issue on this repository and ask. The
+answer is usually yes.

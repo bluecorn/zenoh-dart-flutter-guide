@@ -48,3 +48,10 @@ Each chapter ends with the exact versions it was checked with, and asks for thos
   Rust; nothing is copied from it.
 - **[Flutter's architecture guide](https://docs.flutter.dev/app-architecture/guide)**, for the MVVM layering both
   programs use.
+
+## Copyright and licence
+
+Every fenced code block and every file listing in this guide is licensed under the **Apache License 2.0**
+([LICENSE](LICENSE)): use them in any project, including a commercial one, with no further permission. The surrounding
+text is **© 2026 Hugo Alberto Garcia, all rights reserved** — read it, follow it and link to it freely; to mirror,
+translate or reuse it elsewhere, open an issue and ask. The full statement is in [COPYRIGHT](COPYRIGHT).

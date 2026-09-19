@@ -631,3 +631,8 @@ to go back to.
 | `lints` | 6.1.0 |
 | `test` | 1.32.0 |
 
+
+---
+
+*The code listings in this chapter are licensed under the Apache License 2.0. The text is © 2026 Hugo Alberto Garcia,
+all rights reserved — see [COPYRIGHT](../COPYRIGHT).*
