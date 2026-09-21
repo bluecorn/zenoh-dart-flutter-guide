@@ -30,26 +30,38 @@ this chapter explains where it comes from, so that it does not stop you the firs
 > the Dart SDK the guide uses everywhere, pinned per project with `fvm`. If you have never used `fvm`, this chapter shows
 > the three commands you need.
 
-## What to read in the book
+## What to read
 
-This guide teaches zenoh in the order of *Zenoh Programming in Rust* by Angelo Corsaro, the zenoh book, published at
-<https://kydos.github.io/zenoh-book/>. Each chapter here names the book chapters it follows and leaves the concepts to
-them; the guide adds Dart, Flutter and an application. The book is a draft and its examples are in Rust, which is fine:
-read it for the ideas and the words, and type nothing from it.
+Two books by Angelo Corsaro sit behind this guide, and they do different jobs. You will be sent to both, a little at a
+time, at the point where each helps.
 
-**Chapter 1, [Introduction to Zenoh](https://kydos.github.io/zenoh-book/chapter_01.html).** Read it whole. Take from it
-the words the rest of this guide uses without explaining them again: key expression, session, publisher and subscriber,
-queryable and query, and the three modes a session can run in, peer, client and router. Its section on when to use zenoh
-is the argument for the application you are about to build: a sensor on one device, a tool on another, and no server in
-between.
+**[The Zenoh Book](https://corsaro.me/zenoh/book/) — for the idea.** What zenoh is, what it was built to solve, and
+when it is the right answer. It is written above any particular release, so it ages slowly.
 
-**Chapter 2, [Getting Started](https://kydos.github.io/zenoh-book/chapter_02.html).** Read it up to and including *First
-Pub/Sub Pair*, and skip the rest. It installs Rust and a zenoh router, `zenohd`, and ends with a subscriber on `demo/**`
-receiving one message put on `demo/hello`. This chapter does the same thing in Dart, with the package's `z_sub` and
-`z_put` in place of the Rust programs. Two things are different on purpose. There is no Rust to install, because the
-package ships zenoh's native library inside it. And there is no router: the book's two programs find each other by
-multicast on the local network, while here they connect over the loopback interface only, with the network left out
-until the last chapter. The section *Two programs, two terminals* below says how, and why.
+**[Zenoh Programming in Rust](https://kydos.github.io/zenoh-book/) — for the shape of the API.** The calls, their
+options, and the ways they go wrong. It is a draft, and it is written against Zenoh 1.4.0 while the package this guide
+uses is built on 1.8.0, so an occasional detail there will have moved on.
+
+Both are in Rust, and that is fine: you are reading them for the ideas and the words, and typing nothing from them.
+Where this guide states something about the Dart API, it has been read in the package itself.
+
+For this chapter:
+
+**[Introduction](https://corsaro.me/zenoh/book/introduction/), in The Zenoh Book, and
+[chapter 1, Introduction to Zenoh](https://kydos.github.io/zenoh-book/chapter_01.html), in the other.** Read both;
+between them they are short. Take the words the rest of this guide uses without explaining them again: key expression,
+session, publisher and subscriber, queryable and query, and the three modes a session can run in — peer, client and
+router. The case each makes for when to use zenoh is the argument for the application you are about to build: a sensor
+on one device, a program watching it on another, and no server in between.
+
+**[Getting Started](https://corsaro.me/zenoh/book/getting-started/) and
+[chapter 2, Getting Started](https://kydos.github.io/zenoh-book/chapter_02.html).** Read as far as each one's first
+publisher and subscriber, and skip the rest for now. Both install Rust and a zenoh router, `zenohd`, and end with a
+subscriber receiving one message. This chapter does the same thing in Dart, with the package's `z_sub` and `z_put` in
+place of the Rust programs, and two things are different on purpose. There is no Rust to install, because the package
+ships zenoh's native library inside it. And there is no router: the books' programs find each other over the local
+network, while here they connect over the loopback interface only, with the network left out until the last chapter.
+The section *Two programs, two terminals* below says how, and why.
 
 ## The toolchain
 
