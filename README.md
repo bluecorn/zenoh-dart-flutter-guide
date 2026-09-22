@@ -3,15 +3,15 @@
 A guide that teaches [zenoh](https://zenoh.io) in Dart and Flutter. You build two programs by hand, chapter by chapter,
 and run them against each other:
 
-- **`sensorctl`**, a Dart command-line application on your laptop — the operator's tool. It watches a stream of sensor
-  readings, asks for their history, sets the rate they arrive at, and reports which nodes are alive. Its terminal is its
-  user interface, built the way an application's screen is.
-- **`sensor_node`**, a Flutter application on Android — the sensor. It reads the device's accelerometer and gyroscope,
-  publishes what it reads, answers the tool's questions and takes its commands.
+- **`sensorctl`**, a Dart command-line application on your laptop — the collector, the program the operator uses. It
+  watches a stream of sensor readings, asks for their history, sets the rate they arrive at, and reports which nodes are
+  alive. Its terminal is its user interface, built the way an application's screen is.
+- **`sensor_node`**, a Flutter application on Android — the sensor node. It reads the device's accelerometer and
+  gyroscope, publishes what it reads, answers the collector's questions and takes its commands.
 
-Part 1 needs no phone: the command-line tool talks to a stand-in sensor you write, and to the example programs that come
-with the `zenoh_dart` package. Part 2 replaces the stand-in with a real device, and the tool does not change — which is
-most of what zenoh is for.
+Part 1 needs no phone: the command-line program talks to a stand-in sensor node you write, and to the example programs
+that come with the `zenoh_dart` package. Part 2 replaces the stand-in with a real device, and the program does not
+change — which is most of what zenoh is for.
 
 Both programs follow the same architecture, MVVM, and share one pure-Dart package that holds everything touching zenoh.
 You write every line yourself; nothing here is generated or cloned.
@@ -23,7 +23,7 @@ You write every line yourself; nothing here is generated or cloned.
 | 0 | **[Getting started](chapters/00-getting-started.md)** | the toolchain, a git repository holding a Dart project that depends on `zenoh_dart`, and two of the package's example programs talking to each other in two terminals |
 | 1 | **[A session of your own](chapters/01-a-session-of-your-own.md)** | a session opened with a configuration you wrote, behind `ZenohService`, the one class that imports the package, in a core package that a pub workspace shares with the phone app to come; your first tests, red then green; the program wired by a provider container |
 
-The rest are being written, in the order the zenoh book takes: publishers, subscribers,
+The rest are being written, in the order the books take: publishers, subscribers,
 serialization, queryables, queries, liveliness, quality of service and lifecycle — then the Flutter application on
 Android, and the network beyond one machine.
 
@@ -44,9 +44,12 @@ Each chapter ends with the exact versions it was checked with, and asks for thos
 - **[`zenoh_dart`](https://github.com/bluecorn/zenoh_dart)**, the Dart binding for zenoh, published on
   [pub.dev](https://pub.dev/packages/zenoh_dart). Each chapter starts from one of the programs in the package's
   `example/` folder: you run it first, see the behaviour, and then build that idea into the application.
-- **[Zenoh Programming in Rust](https://kydos.github.io/zenoh-book/)** by Angelo Corsaro. The guide follows the book's
-  order and its vocabulary, and links to it for each concept instead of explaining it a second time. Its examples are in
-  Rust; nothing is copied from it.
+- **[The Zenoh Book](https://corsaro.me/zenoh/book/)** by Angelo Corsaro, for the ideas: what a thing is, why it exists
+  and when to use it. The chapters follow its order, name the pages to read instead of explaining a concept a second
+  time, and take their vocabulary from it, with the author's permission. Nothing is copied from it.
+- **[Zenoh Programming in Rust](https://kydos.github.io/zenoh-book/)**, by the same author, for the shape of the API and
+  its options, chapter by chapter. It is a draft written against Zenoh 1.4.0 and its examples are in Rust; nothing is
+  copied from it. Where this guide states something about the Dart API, it has been read in `zenoh_dart` itself.
 - **[Flutter's architecture guide](https://docs.flutter.dev/app-architecture/guide)**, for the MVVM layering both
   programs use.
 
