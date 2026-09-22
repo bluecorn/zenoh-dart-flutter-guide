@@ -169,7 +169,8 @@ Future<void> main() async {
   try {
     print('sensorctl is ${session.zid.toHexString()}');
     final peers = session.peersZid();
-    print('connected to ${peers.length} ${peers.length == 1 ? 'peer' : 'peers'}:');
+    final noun = peers.length == 1 ? 'peer' : 'peers';
+    print('connected to ${peers.length} $noun:');
     for (final peer in peers) {
       print('  ${peer.toHexString()}');
     }
