@@ -21,8 +21,9 @@ You write every line yourself; nothing here is generated or cloned.
 | # | chapter | what you build |
 |---|---|---|
 | 0 | **[Getting started](chapters/00-getting-started.md)** | the toolchain, a git repository holding a Dart project that depends on `zenoh_dart`, and two of the package's example programs talking to each other in two terminals |
+| 1 | **[A session of your own](chapters/01-a-session-of-your-own.md)** | a session opened with a configuration you wrote, behind `ZenohService`, the one class that imports the package, in a core package that a pub workspace shares with the phone app to come; your first tests, red then green; the program wired by a provider container |
 
-The rest are being written, in the order the zenoh book takes: sessions and configuration, publishers, subscribers,
+The rest are being written, in the order the zenoh book takes: publishers, subscribers,
 serialization, queryables, queries, liveliness, quality of service and lifecycle — then the Flutter application on
 Android, and the network beyond one machine.
 
