@@ -3,7 +3,7 @@
 This chapter follows chapters 1 and 2 of the zenoh book, *Introduction to Zenoh* and *Getting Started*, and starts from
 two programs shipped with the `zenoh_dart` package, `z_sub` and `z_put`.
 
-## What you build, and what you will see
+## 1 — What you build, and what you will see
 
 By the end of this chapter you have a working toolchain, a git repository holding a Dart project that depends on
 `zenoh_dart`, and two small programs from the package itself talking to each other on your laptop: one subscribes to a key expression, the other
@@ -30,7 +30,7 @@ this chapter explains where it comes from, so that it does not stop you the firs
 > the Dart SDK the guide uses everywhere, pinned per project with `fvm`. If you have never used `fvm`, this chapter shows
 > the three commands you need.
 
-## What to read
+## 2 — What to read
 
 Two books by Angelo Corsaro sit behind this guide, and they do different jobs. You will be sent to both, a little at a
 time, at the point where each helps.
@@ -63,7 +63,7 @@ ships zenoh's native library inside it. And there is no router: the books' progr
 network, while here they connect over the loopback interface only, with the network left out until the last chapter.
 The section *Two programs, two terminals* below says how, and why.
 
-## The toolchain
+## 3 — The toolchain
 
 **A Linux machine on x86_64.** That is the one hard requirement: the package ships zenoh's native library for Linux on
 x86_64 and for Android, and for nothing else, so the laptop side of this guide cannot run on macOS or Windows. The
@@ -146,7 +146,7 @@ ever stops compiling on your machine, the first thing to try is to pin those: `.
 and a package is pinned by replacing the caret in its constraint, `^1.0.0-rc.1`, with the exact version the chapter
 names, `1.0.0-rc.1`, followed by `fvm dart pub get`.
 
-## The project
+## 4 — The project
 
 Everything you build in this guide lives in one folder, `zenoh_sensors`, and that folder is a git repository from its
 first minute. In this chapter it holds one small command-line program, `sensorctl`; from the next chapter on it also holds the code that program shares with the phone
@@ -328,7 +328,7 @@ for the part of a line that differs on your machine.
 > `pubspec.yaml`, which is the folder the rule above asks for. The Debug Console at the bottom of the window shows
 > `Hello world: 42!`.
 
-## What git keeps
+## 5 — What git keeps
 
 `fvm use` and `fvm dart create` each wrote a `.gitignore`: `.fvm/` at the top, `.dart_tool/` in the program. Before the
 first commit, the top folder's becomes the list this project keeps, with a reason for every line. Go back to the top folder
@@ -385,7 +385,7 @@ they need it. `.vscode/settings.json` is in, because its paths count from the to
 > **In VS Code.** **View › Source Control** lists the same twelve files under **Changes**. Choose the **+** on the
 > **Changes** line to stage them all, type the message in the box above them, and choose **Commit**.
 
-## Two programs, two terminals
+## 6 — Two programs, two terminals
 
 The package ships its examples as source, next to its own code. This section copies two of them into `sensorctl` and
 runs them against each other: `z_sub` subscribes to a key expression and prints whatever arrives, and `z_put` puts one
@@ -499,7 +499,7 @@ session, and ends.
 > Split Terminal** to see both side by side. Every new terminal starts in `zenoh_sensors`, so type
 > `cd apps/sensorctl` in it first. Ctrl-C works in VS Code's terminal as in any other.
 
-## The same from VS Code
+## 7 — The same from VS Code
 
 VS Code can start the two programs itself, from its Run and Debug view, with the same SDK and the same options, and show
 their output in its Debug Console. It needs one file that describes each program: `zenoh_sensors/.vscode/launch.json`.
@@ -574,7 +574,7 @@ The commit takes `launch.json`, the three example files, and `pubspec.yaml` and 
 > **In VS Code.** **View › Source Control** lists the same six files under **Changes**. Choose the **+** on the
 > **Changes** line to stage them all, type the message in the box above them, and choose **Commit**.
 
-## What changed in the architecture
+## 8 — What changed in the architecture
 
 Nothing yet, on purpose. `sensorctl` is still the template's program, and the two programs that talked to each other are
 the package's own, unchanged. This chapter laid the ground the rest stands on: a pinned toolchain, a repository, and proof
@@ -597,7 +597,7 @@ loopback, as the options did here, and prints who it is; then, with a test in pl
 first layer, `ZenohService`. In the same chapter `zenoh_sensors` becomes a pub workspace, with the service in a package of
 its own that the phone app will share in Part 2.
 
-## Files and versions at the end of this chapter
+## 9 — Files and versions at the end of this chapter
 
 `zenoh_sensors` now holds this, in two commits: `Pin Flutter 3.47.2 and create sensorctl` and `Run the package's z_sub
 and z_put examples`.
