@@ -316,6 +316,10 @@ candidate. Until it is fixed, that gives you one rule: start your programs from 
 you own. A program started in a folder someone else can write to could load a library placed there. The next chapter
 shows what changes when `zenoh_sensors` becomes a workspace.
 
+`Running build hooks...` will be in front of every program's output from here on, sometimes with a line or two more
+from pub. The guide shows those lines as `⋮` and starts an expected output at the program's first words; `…` stands
+for the part of a line that differs on your machine.
+
 > **If you already know zenoh.** `libzenohc.so` is the library a C program links, and the package's examples are made
 > to interoperate with zenoh-c's: its README notes that a Dart `z_get` can query a C `z_queryable`.
 
@@ -422,7 +426,8 @@ fvm dart run example/z_sub.dart -l tcp/127.0.0.1:7447 --no-multicast-scouting
 ```
 
 ```
-Running build hooks...Running build hooks...Opening session...
+⋮
+…Opening session...
 Declaring Subscriber on 'demo/example/**'...
 Press CTRL-C to quit...
 ```
@@ -447,7 +452,8 @@ fvm dart run example/z_put.dart \
 ```
 
 ```
-Running build hooks...Running build hooks...Opening session...
+⋮
+…Opening session...
 Putting Data ('demo/example/test': 'Hello from the guide')...
 … ERROR ThreadId(…) zenoh::api::admin: Unable to publish transport event: session closed
 ```
