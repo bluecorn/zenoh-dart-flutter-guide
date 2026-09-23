@@ -301,6 +301,96 @@ providers that wire the program together; its view models and its terminal view 
 when there is something of its own to test. The rule the deletion follows is worth keeping:
 **code that nothing uses goes the moment it stops being used**, not at some tidying-up later.
 
+**10. Stricter lints, now that the code is yours.** `dart create` gave the program the Dart team's recommended lint
+set, `lints`, which is what the template's own code was written to. Everything in this folder is yours now, and
+this guide holds its own code to a stricter set: [`very_good_analysis`](https://pub.dev/packages/very_good_analysis),
+some two hundred rules, applied whole, with nothing switched off in the code you write. Add it as a development
+dependency:
+
+```sh
+# in zenoh_sensors/apps/sensorctl
+fvm dart pub add --dev very_good_analysis
+```
+
+Then replace `zenoh_sensors/apps/sensorctl/analysis_options.yaml`, the template's file with its long comment, with this:
+
+```yaml
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - example/**
+```
+
+The first line is the whole switch. The exclusion is for the folder of copied examples: they are the package's
+programs, written to the package's rules, and a lint set of yours has nothing to say to them. Now ask the analyzer
+what it thinks of the program you wrote:
+
+```sh
+# in zenoh_sensors/apps/sensorctl
+fvm dart analyze
+```
+
+```
+Analyzing sensorctl...
+
+   info - bin/sensorctl.dart:15:5 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - bin/sensorctl.dart:18:5 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - bin/sensorctl.dart:20:7 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+
+3 issues found.
+```
+
+Three findings, one per `print`, and the rule has a point: `print` is for a developer looking at a console while
+debugging, and a program's real output goes through `stdout`, which is a stream a shell can redirect and a test can
+capture. Replace `zenoh_sensors/apps/sensorctl/bin/sensorctl.dart` with the same program writing through it:
+
+```dart
+import 'dart:io';
+
+import 'package:zenoh_dart/zenoh.dart';
+
+Future<void> main() async {
+  Zenoh.initLog('error');
+
+  final config = Config()
+    ..insertJson5('mode', '"peer"')
+    ..insertJson5('scouting/multicast/enabled', 'false')
+    ..insertJson5('scouting/gossip/enabled', 'false')
+    ..insertJson5('listen/endpoints', '[]')
+    ..insertJson5('connect/endpoints', '["tcp/127.0.0.1:7447"]');
+
+  final session = await Session.open(config: config);
+  try {
+    stdout.writeln('sensorctl is ${session.zid.toHexString()}');
+    final peers = session.peersZid();
+    final noun = peers.length == 1 ? 'peer' : 'peers';
+    stdout.writeln('connected to ${peers.length} $noun:');
+    for (final peer in peers) {
+      stdout.writeln('  ${peer.toHexString()}');
+    }
+  } finally {
+    session.close();
+  }
+}
+```
+
+`stdout` comes from `dart:io`, and `writeln` writes a line to it; the program prints exactly what it printed.
+Run the analyzer again:
+
+```sh
+# in zenoh_sensors/apps/sensorctl
+fvm dart analyze
+```
+
+`No issues found!` — and from here that is what it says after every section of this guide, for every package. The
+rules will ask for things as you go: a doc comment on every public class and member, `package:` imports inside
+`lib/`, and Dart 3.13's shorter way of writing a constructor, which you meet in section 5. Each is explained where
+it first appears.
+
+> **In VS Code.** The Problems panel, **View › Problems**, lists the same three findings the moment the new
+> `analysis_options.yaml` is saved, with a squiggle under each `print`; both go when you save the new program.
+
 ## 4 — A workspace, and a package to share
 
 The zenoh code you are about to write is not only `sensorctl`'s. In the next chapter a Flutter app on a phone opens a session of
@@ -329,16 +419,23 @@ fvm dart create --template=package packages/sensor_core
 You now have a second Dart package with its own `pubspec.yaml`, its own `lib/`, and its own `test/` holding one
 passing test. Nothing connects it to `sensorctl` yet.
 
-`dart create` also writes an `example/` folder demonstrating the library it invented. Nothing here will use it, so it
-goes the same way the last section's leftovers went:
+`dart create` also invented a library to demonstrate — a class called `Awesome`, in `lib/src/sensor_core_base.dart`,
+with a test and an `example/` folder for it. None of it is yours, and the lint set this package is about to get
+would have things to say about it, so it goes the way the last section's leftovers went:
 
 ```sh
 # in zenoh_sensors
 rm -r packages/sensor_core/example
+rm packages/sensor_core/lib/src/sensor_core_base.dart packages/sensor_core/test/sensor_core_test.dart
 ```
 
-What the template left in `lib/` and `test/` stays for now — the next two sections replace both with real files, and
-until then the package resolves and its test passes, which is a better place to work from than an empty folder.
+The library's own file still exports the class you just deleted. Replace `zenoh_sensors/packages/sensor_core/lib/sensor_core.dart`
+with a library that says what it is and exports nothing, until section 5 gives it something:
+
+```dart
+/// The zenoh data layer that `sensorctl` and the phone app share.
+library;
+```
 
 ```
 zenoh_sensors/
@@ -350,7 +447,6 @@ zenoh_sensors/
         │   ├── sensor_core.dart
         │   └── src/
         ├── test/
-        │   └── sensor_core_test.dart
         └── pubspec.yaml
 ```
 
@@ -395,14 +491,15 @@ dependencies:
   zenoh_dart: ^1.0.0-rc.1
 
 dev_dependencies:
-  lints: ^6.0.0
   test: ^1.25.6
+  very_good_analysis: ^11.0.0
 ```
 
-Three of `dart create`'s lines go at the same time. The description was `A sample command-line application.`, which is
-true of a sample and not of this; the commented-out `repository:` points at `my_org/my_repo`; and `path` was never
-imported by anything here. **A dependency nothing imports is dead in the same way an unused file is** — it still has to
-resolve, still pins a version, and still has to be explained to whoever reads the file next.
+Four of `dart create`'s lines go at the same time. The description was `A sample command-line application.`, which is
+true of a sample and not of this; the commented-out `repository:` points at `my_org/my_repo`; `path` was never
+imported by anything here; and `lints` stopped being read when section 3 switched the lint set. **A dependency nothing
+uses is dead in the same way an unused file is** — it still has to resolve, still pins a version, and still has to be
+explained to whoever reads the file next.
 
 and `zenoh_sensors/packages/sensor_core/pubspec.yaml` becomes:
 
@@ -417,12 +514,17 @@ environment:
 resolution: workspace
 
 dev_dependencies:
-  lints: ^6.0.0
   test: ^1.25.6
+  very_good_analysis: ^11.0.0
 ```
 
-with the same three lines removed, and no `dependencies:` at all yet — this package depends on nothing until section 6
-gives it `zenoh_dart`.
+with the same lines removed, the lint set swapped, and no `dependencies:` at all yet — this package depends on nothing
+until section 6 gives it `zenoh_dart`. The package's rules are the same as the program's, minus the exclusion, since
+nothing is copied in here. Replace `zenoh_sensors/packages/sensor_core/analysis_options.yaml`:
+
+```yaml
+include: package:very_good_analysis/analysis_options.yaml
+```
 
 **5. Resolve once, from the top.**
 
@@ -530,12 +632,10 @@ exist, so the way it reads is the shape that code will have.
 
 That sentence is the test's name, and everything the rest of the chapter writes exists to make it true.
 
-**2. Clear the template out of the core package, and make room.** `dart create` left a library called `Awesome` and a
-test for it. Neither is yours:
+**2. Make room.**
 
 ```sh
 # in zenoh_sensors
-rm packages/sensor_core/test/sensor_core_test.dart packages/sensor_core/lib/src/sensor_core_base.dart
 mkdir -p packages/sensor_core/lib/src/services packages/sensor_core/test/services
 ```
 
@@ -583,33 +683,55 @@ reported the same id, `contains` would pass while nothing had been found at all.
 `zenoh_sensors/packages/sensor_core/lib/src/services/session_settings.dart`:
 
 ```dart
+/// A session's settings, by role: the sensor node's, or a collector's.
 class SessionSettings {
-  const SessionSettings._();
+  const new _();
 
-  factory SessionSettings.sensorNode() => const SessionSettings._();
-  factory SessionSettings.collectorNode() => const SessionSettings._();
+  /// The sensor node's settings.
+  factory sensorNode() => const SessionSettings._();
+
+  /// A collector's settings.
+  factory collectorNode() => const SessionSettings._();
 }
 ```
 
-Then `zenoh_sensors/packages/sensor_core/lib/src/services/zenoh_service.dart`:
+Two of the lint set's rules show here for the first time. **Every public class and member has a doc comment**, the
+`///` lines: one sentence saying what the thing is, which the editor shows wherever the name is used. A comment is
+a claim, so each one in this guide has been checked against the code below it. And **a constructor is written
+`new`**, not with the class's name repeated: `const new _()` is the private constructor `SessionSettings._`, and
+`factory sensorNode()` the factory `SessionSettings.sensorNode`, as Dart 3.13 lets you write them; calling them has
+not changed. Then `zenoh_sensors/packages/sensor_core/lib/src/services/zenoh_service.dart`:
 
 ```dart
-import 'session_settings.dart';
+import 'package:sensor_core/src/services/session_settings.dart';
 
+/// The one class that talks to zenoh. It owns the session and hands plain
+/// Dart values upward.
 class ZenohService {
-  ZenohService(this.settings);
+  /// A service for one role's [settings]. Nothing opens until [open].
+  new(this.settings);
 
+  /// Which side of the topology this session is on.
   final SessionSettings settings;
 
+  /// Opens the session.
   Future<void> open() async {}
+
+  /// The session's identity.
   String get zid => '';
+
+  /// The identities of the peers this session is connected to.
   List<String> get peerIds => const [];
+
+  /// Closes the session.
   void dispose() {}
 }
 ```
 
-And replace `zenoh_sensors/packages/sensor_core/lib/sensor_core.dart`, which still exports the template, with the two
-files that are now the package:
+The third rule: inside `lib/`, a file imports another by its `package:` path, never by a relative one. The doc
+comments say what each member will do; the bodies do nothing yet. And replace
+`zenoh_sensors/packages/sensor_core/lib/sensor_core.dart`, the empty library of section 4, with the two files that are
+now the package:
 
 ```dart
 /// The zenoh data layer that `sensorctl` and the phone app share.
@@ -743,16 +865,27 @@ fvm dart test packages/sensor_core -n 'has an identity'
 constant in it:
 
 ```dart
-import 'session_settings.dart';
+import 'package:sensor_core/src/services/session_settings.dart';
 
+/// The one class that talks to zenoh. It owns the session and hands plain
+/// Dart values upward.
 class ZenohService {
-  ZenohService(this.settings);
+  /// A service for one role's [settings]. Nothing opens until [open].
+  new(this.settings);
 
+  /// Which side of the topology this session is on.
   final SessionSettings settings;
 
+  /// Opens the session.
   Future<void> open() async {}
+
+  /// The session's identity.
   String get zid => 'the-sensor-node';
+
+  /// The identities of the peers this session is connected to.
   List<String> get peerIds => const [];
+
+  /// Closes the session.
   void dispose() {}
 }
 ```
@@ -823,8 +956,8 @@ dependencies:
   zenoh_dart: ^1.0.0-rc.1
 
 dev_dependencies:
-  lints: ^6.0.0
   test: ^1.25.6
+  very_good_analysis: ^11.0.0
 ```
 
 and resolve, from the top as always:
@@ -840,24 +973,32 @@ fvm dart pub get
 Then replace `zenoh_sensors/packages/sensor_core/lib/src/services/zenoh_service.dart` with one that opens a session:
 
 ```dart
+import 'package:sensor_core/src/services/session_settings.dart';
 import 'package:zenoh_dart/zenoh.dart';
 
-import 'session_settings.dart';
-
+/// The one class that talks to zenoh. It owns the session and hands plain
+/// Dart values upward.
 class ZenohService {
-  ZenohService(this.settings);
+  /// A service for one role's [settings]. Nothing opens until [open].
+  new(this.settings);
 
+  /// Which side of the topology this session is on.
   final SessionSettings settings;
 
   Session? _session;
 
+  /// Opens the session. When this returns, it is open.
   Future<void> open() async {
     _session = await Session.open(config: Config());
   }
 
+  /// The session's identity: thirty-two hexadecimal characters.
   String get zid => _opened.zid.toHexString();
+
+  /// The identities of the peers this session is connected to.
   List<String> get peerIds => const [];
 
+  /// Closes the session. Safe before [open], and more than once.
   void dispose() {
     _session?.close();
     _session = null;
@@ -881,7 +1022,8 @@ fvm dart test packages/sensor_core -n 'identit'
 Both pass. `-n 'identit'` matches both test names, which is the quickest way to check that the new one did not break
 the old one.
 
-Three things arrived with that file, and only one of them was asked for by the test.
+Three things arrived with that file, and only one of them was asked for by the test. (The imports are in alphabetical
+order of their packages, which is another of the rules; the analyzer says so if they are not.)
 
 **The session, which the test demanded.** `Session.open` is awaited, the handle is kept, and `zid` reports it as
 thirty-two hexadecimal characters — the same id `z_info` printed in section 3.
@@ -942,12 +1084,18 @@ And give `SessionSettings` the emptiest `asJson5` that compiles, so that the tes
 missing name. Replace `zenoh_sensors/packages/sensor_core/lib/src/services/session_settings.dart`:
 
 ```dart
+/// A session's settings, by role: the sensor node's, or a collector's.
 class SessionSettings {
-  const SessionSettings._();
+  const new _();
 
-  factory SessionSettings.sensorNode() => const SessionSettings._();
-  factory SessionSettings.collectorNode() => const SessionSettings._();
+  /// The sensor node's settings.
+  factory sensorNode() => const SessionSettings._();
 
+  /// A collector's settings.
+  factory collectorNode() => const SessionSettings._();
+
+  /// The settings as the entries `Config.insertJson5` takes: a key path and a
+  /// JSON5 value each.
   Map<String, String> get asJson5 => const {};
 }
 ```
@@ -973,12 +1121,19 @@ to delete without a test going red, which no other test in this chapter can do. 
 `zenoh_sensors/packages/sensor_core/lib/src/services/session_settings.dart`:
 
 ```dart
+/// A session's settings, by role: the sensor node's, or a collector's. The
+/// three settings that never vary are in [asJson5] too.
 class SessionSettings {
-  const SessionSettings._();
+  const new _();
 
-  factory SessionSettings.sensorNode() => const SessionSettings._();
-  factory SessionSettings.collectorNode() => const SessionSettings._();
+  /// The sensor node's settings.
+  factory sensorNode() => const SessionSettings._();
 
+  /// A collector's settings.
+  factory collectorNode() => const SessionSettings._();
+
+  /// The settings as the entries `Config.insertJson5` takes: a key path and a
+  /// JSON5 value each.
   Map<String, String> get asJson5 => const {
     'mode': '"peer"',
     'scouting/multicast/enabled': 'false',
@@ -991,24 +1146,33 @@ And make the service build its configuration from it. Replace
 `zenoh_sensors/packages/sensor_core/lib/src/services/zenoh_service.dart`:
 
 ```dart
+import 'package:sensor_core/src/services/session_settings.dart';
 import 'package:zenoh_dart/zenoh.dart';
 
-import 'session_settings.dart';
-
+/// The one class that talks to zenoh. It owns the session and hands plain
+/// Dart values upward.
 class ZenohService {
-  ZenohService(this.settings);
+  /// A service for one role's [settings]. Nothing opens until [open].
+  new(this.settings);
 
+  /// Which side of the topology this session is on.
   final SessionSettings settings;
 
   Session? _session;
 
+  /// Opens the session with the settings. The connection they ask for has
+  /// been made, or has already failed, when this returns.
   Future<void> open() async {
     _session = await Session.open(config: _config());
   }
 
+  /// The session's identity: thirty-two hexadecimal characters.
   String get zid => _opened.zid.toHexString();
+
+  /// The identities of the peers this session is connected to.
   List<String> get peerIds => const [];
 
+  /// Closes the session. Safe before [open], and more than once.
   void dispose() {
     _session?.close();
     _session = null;
@@ -1051,25 +1215,34 @@ neutral answers. `peerIds` still returns an empty constant, and a red produced b
 Replace `zenoh_sensors/packages/sensor_core/lib/src/services/zenoh_service.dart`:
 
 ```dart
+import 'package:sensor_core/src/services/session_settings.dart';
 import 'package:zenoh_dart/zenoh.dart';
 
-import 'session_settings.dart';
-
+/// The one class that talks to zenoh. It owns the session and hands plain
+/// Dart values upward.
 class ZenohService {
-  ZenohService(this.settings);
+  /// A service for one role's [settings]. Nothing opens until [open].
+  new(this.settings);
 
+  /// Which side of the topology this session is on.
   final SessionSettings settings;
 
   Session? _session;
 
+  /// Opens the session with the settings. The connection they ask for has
+  /// been made, or has already failed, when this returns.
   Future<void> open() async {
     _session = await Session.open(config: _config());
   }
 
+  /// The session's identity: thirty-two hexadecimal characters.
   String get zid => _opened.zid.toHexString();
+
+  /// The identities of the peers this session is connected to.
   List<String> get peerIds =>
       _opened.peersZid().map((id) => id.toHexString()).toList();
 
+  /// Closes the session. Safe before [open], and more than once.
   void dispose() {
     _session?.close();
     _session = null;
@@ -1155,27 +1328,36 @@ value's two fields, and the two factories fill them in opposite ways. Replace
 `zenoh_sensors/packages/sensor_core/lib/src/services/session_settings.dart`:
 
 ```dart
+/// A session's settings, by role: where it listens and where it connects.
+/// The three settings that never vary are in [asJson5] too.
 class SessionSettings {
-  const SessionSettings._({
-    required this.listenEndpoints,
-    required this.connectEndpoints,
-  });
+  const new _({required this.listenEndpoints, required this.connectEndpoints});
 
-  factory SessionSettings.sensorNode() => const SessionSettings._(
+  /// The sensor node's settings: it listens on the loopback and connects
+  /// nowhere.
+  factory sensorNode() => const SessionSettings._(
     listenEndpoints: [nodeEndpoint],
     connectEndpoints: [],
   );
 
-  factory SessionSettings.collectorNode() => const SessionSettings._(
+  /// A collector's settings: it listens nowhere and connects to the sensor
+  /// node.
+  factory collectorNode() => const SessionSettings._(
     listenEndpoints: [],
     connectEndpoints: [nodeEndpoint],
   );
 
+  /// Where the sensor node waits: the loopback, port 7447.
   static const nodeEndpoint = 'tcp/127.0.0.1:7447';
 
+  /// The endpoints the session listens on.
   final List<String> listenEndpoints;
+
+  /// The endpoints the session connects to.
   final List<String> connectEndpoints;
 
+  /// The settings as the entries `Config.insertJson5` takes: a key path and a
+  /// JSON5 value each.
   Map<String, String> get asJson5 => {
     'mode': '"peer"',
     'scouting/multicast/enabled': 'false',
@@ -1258,8 +1440,8 @@ dependencies:
   zenoh_dart: ^1.0.0-rc.1
 
 dev_dependencies:
-  lints: ^6.0.0
   test: ^1.25.6
+  very_good_analysis: ^11.0.0
 ```
 
 and resolve, from the top:
@@ -1282,27 +1464,38 @@ its own. Replace `zenoh_sensors/packages/sensor_core/lib/src/services/zenoh_serv
 line is added above it:
 
 ```dart
+import 'package:sensor_core/src/services/session_settings.dart';
 import 'package:zenoh_dart/zenoh.dart';
 
-import 'session_settings.dart';
-
+/// Starts zenoh's own log at [level], printed to standard error: for a
+/// program with a terminal. Once per process, before any session opens.
 void initZenohLogging(String level) => Zenoh.initLog(level);
 
+/// The one class that talks to zenoh. It owns the session and hands plain
+/// Dart values upward.
 class ZenohService {
-  ZenohService(this.settings);
+  /// A service for one role's [settings]. Nothing opens until [open].
+  new(this.settings);
 
+  /// Which side of the topology this session is on.
   final SessionSettings settings;
 
   Session? _session;
 
+  /// Opens the session with the settings. The connection they ask for has
+  /// been made, or has already failed, when this returns.
   Future<void> open() async {
     _session = await Session.open(config: _config());
   }
 
+  /// The session's identity: thirty-two hexadecimal characters.
   String get zid => _opened.zid.toHexString();
+
+  /// The identities of the peers this session is connected to.
   List<String> get peerIds =>
       _opened.peersZid().map((id) => id.toHexString()).toList();
 
+  /// Closes the session. Safe before [open], and more than once.
   void dispose() {
     _session?.close();
     _session = null;
@@ -1334,6 +1527,8 @@ that matches nothing.
 **4. The refactor.** Replace `zenoh_sensors/apps/sensorctl/bin/sensorctl.dart`:
 
 ```dart
+import 'dart:io';
+
 import 'package:sensor_core/sensor_core.dart';
 
 Future<void> main() async {
@@ -1342,12 +1537,12 @@ Future<void> main() async {
   final service = ZenohService(SessionSettings.collectorNode());
   try {
     await service.open();
-    print('sensorctl is ${service.zid}');
+    stdout.writeln('sensorctl is ${service.zid}');
     final peers = service.peerIds;
     final noun = peers.length == 1 ? 'peer' : 'peers';
-    print('connected to ${peers.length} $noun:');
+    stdout.writeln('connected to ${peers.length} $noun:');
     for (final peer in peers) {
-      print('  $peer');
+      stdout.writeln('  $peer');
     }
   } finally {
     service.dispose();
@@ -1356,8 +1551,8 @@ Future<void> main() async {
 ```
 
 Read it against section 3's. The five settings are gone: they are `SessionSettings.collectorNode()` now, and they are
-tested. `Config` and `Session` went with them — the program imports `sensor_core` and nothing else, and no longer
-knows that `zenoh_dart` exists. What is left is what the program is *for*: say who I am, say who I found. One thing
+tested. `Config` and `Session` went with them — the program imports `sensor_core` and `dart:io` and nothing else, and
+no longer knows that `zenoh_dart` exists. What is left is what the program is *for*: say who I am, say who I found. One thing
 moved: `open()` is inside the `try` now, which it could not be in section 3, because a service exists before its
 session does, and disposing one that never opened is safe — a rule the next section pins with a test.
 
@@ -1422,8 +1617,8 @@ dependencies:
   zenoh_dart: ^1.0.0-rc.1
 
 dev_dependencies:
-  lints: ^6.0.0
   test: ^1.25.6
+  very_good_analysis: ^11.0.0
 ```
 
 ```sh
@@ -1438,10 +1633,12 @@ fills:
 import 'package:riverpod/riverpod.dart';
 import 'package:sensor_core/sensor_core.dart';
 
+/// Which side of the topology this program is on: a collector.
 final sessionSettingsProvider = Provider<SessionSettings>(
   (ref) => SessionSettings.collectorNode(),
 );
 
+/// The program's one zenoh session, disposed with the container.
 final zenohServiceProvider = Provider<ZenohService>((ref) {
   final service = ZenohService(ref.watch(sessionSettingsProvider));
   ref.onDispose(service.dispose);
@@ -1472,6 +1669,8 @@ through the provider**, never by hand.
 Replace `zenoh_sensors/apps/sensorctl/bin/sensorctl.dart`:
 
 ```dart
+import 'dart:io';
+
 import 'package:riverpod/riverpod.dart';
 import 'package:sensor_core/sensor_core.dart';
 import 'package:sensorctl/config/providers.dart';
@@ -1483,12 +1682,12 @@ Future<void> main() async {
   try {
     final service = container.read(zenohServiceProvider);
     await service.open();
-    print('sensorctl is ${service.zid}');
+    stdout.writeln('sensorctl is ${service.zid}');
     final peers = service.peerIds;
     final noun = peers.length == 1 ? 'peer' : 'peers';
-    print('connected to ${peers.length} $noun:');
+    stdout.writeln('connected to ${peers.length} $noun:');
     for (final peer in peers) {
-      print('  $peer');
+      stdout.writeln('  $peer');
     }
   } finally {
     container.dispose();
@@ -1636,6 +1835,10 @@ the guide checks each zenoh claim it makes — once, at the layer that touches i
 will be tested against a hand-written stand-in for the layer to its right, which is what makes those tests fast and
 what lets them run without a network.
 
+**Every package is held to the same lint set, whole.** `very_good_analysis`, with nothing switched off in the code you
+write: a doc comment on every public name, `package:` imports inside `lib/`, output through `stdout`. The analyzer
+runs clean at the end of every section of this guide, and a rule is explained where it first bites.
+
 **And the program is wired by providers.** Flutter's guide builds its objects with constructor injection and a
 `ChangeNotifier`; this guide uses Riverpod for both of its applications, because `ChangeNotifier` ships with Flutter
 and a pure-Dart program cannot use it, and one mechanism for both programs is worth more than the default. From now
@@ -1665,12 +1868,12 @@ git add .
 git commit -m "A session of your own: sensor_core, ZenohService and its tests"
 ```
 
-It takes eighteen files. Twelve are new: the core package, the providers, `z_info.dart` and the workspace's own
-`pubspec.yaml`. Three changed, two were deleted in section 3, and the lock file git reports as moved from
-`apps/sensorctl/` to the top, because a workspace keeps one. `.dart_tool/` stays out at every level, and so does
+It takes nineteen files. Twelve are new: the core package, the providers, `z_info.dart` and the workspace's own
+`pubspec.yaml`. Four changed, the program's lint rules among them, two were deleted in section 3, and the lock file
+git reports as moved from `apps/sensorctl/` to the top, because a workspace keeps one. `.dart_tool/` stays out at every level, and so does
 `.fvm/`, as before.
 
-> **In VS Code.** **View › Source Control** lists the same eighteen changes. Choose the **+** on the **Changes** line
+> **In VS Code.** **View › Source Control** lists the same nineteen changes. Choose the **+** on the **Changes** line
 > to stage them all, type the message in the box above them, and choose **Commit**.
 
 `zenoh_sensors` now holds this, in three commits: the two from chapter 0, and `A session of your own: sensor_core,
@@ -1740,7 +1943,7 @@ ones to go back to.
 | `zenoh_dart`, built on zenoh 1.8.0 | 1.0.0-rc.1 |
 | `riverpod` | 3.4.3 |
 | `args` | 2.7.0 |
-| `lints` | 6.1.0 |
+| `very_good_analysis` | 11.0.0 |
 | `test` | 1.32.0 |
 
 ---
