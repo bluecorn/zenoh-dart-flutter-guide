@@ -706,27 +706,14 @@ here and two in the next section.
 
 Run one test at a time while you are inside a cycle, by a piece of its name:
 
-**Cycle 1 — a service has an identity once it is open.** Add a second test to
-`zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test.dart`, so the file reads:
+**Cycle 1 — a service has an identity once it is open.** From here the guide shows a test file by what changes
+in it: `⋮` stands for everything already there, and what follows goes at the end of the file, before `main`'s
+closing brace — which the block shows, so that you can see where. When the imports change, a block shows them above
+the `⋮`, as they now read. Add a second test to
+`zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test.dart`:
 
 ```dart
-import 'package:sensor_core/sensor_core.dart';
-import 'package:test/test.dart';
-
-void main() {
-  test('a sensor node and a collector find each other on loopback', () async {
-    final sensorNode = ZenohService(SessionSettings.sensorNode());
-    final collectorNode = ZenohService(SessionSettings.collectorNode());
-    addTearDown(sensorNode.dispose);
-    addTearDown(collectorNode.dispose);
-
-    await sensorNode.open();
-    await collectorNode.open();
-
-    expect(collectorNode.peerIds, contains(sensorNode.zid));
-    expect(sensorNode.peerIds, contains(collectorNode.zid));
-    expect(collectorNode.zid, isNot(sensorNode.zid));
-  });
+⋮
 
   test('a service has an identity once it is open', () async {
     final sensorNode = ZenohService(SessionSettings.sensorNode());
@@ -784,35 +771,10 @@ have a passing test and a lie, and the next test's job is to kill the lie. Fakin
 you do.
 
 **Cycle 2 — two services have different identities.** This is the test that kills it. Add a third to
-`zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test.dart`, so the whole file reads:
+`zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test.dart`:
 
 ```dart
-import 'package:sensor_core/sensor_core.dart';
-import 'package:test/test.dart';
-
-void main() {
-  test('a sensor node and a collector find each other on loopback', () async {
-    final sensorNode = ZenohService(SessionSettings.sensorNode());
-    final collectorNode = ZenohService(SessionSettings.collectorNode());
-    addTearDown(sensorNode.dispose);
-    addTearDown(collectorNode.dispose);
-
-    await sensorNode.open();
-    await collectorNode.open();
-
-    expect(collectorNode.peerIds, contains(sensorNode.zid));
-    expect(sensorNode.peerIds, contains(collectorNode.zid));
-    expect(collectorNode.zid, isNot(sensorNode.zid));
-  });
-
-  test('a service has an identity once it is open', () async {
-    final sensorNode = ZenohService(SessionSettings.sensorNode());
-    addTearDown(sensorNode.dispose);
-
-    await sensorNode.open();
-
-    expect(sensorNode.zid, isNotEmpty);
-  });
+⋮
 
   test('two services have different identities', () async {
     final sensorNode = ZenohService(SessionSettings.sensorNode());
@@ -957,48 +919,11 @@ the two `scouting` entries from the settings, and the outer test still passes. A
 absence has to be checked the one way it can be: read back as data, and compared with what it should say.
 
 So the test reads the settings as data, through a property they do not have yet — `asJson5`, the settings as the
-entries `insertJson5` takes, a map from a key path to a JSON5 value, the same pairs section 3 wrote by hand. Replace
-`zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test.dart` with this, which adds a fourth test:
+entries `insertJson5` takes, a map from a key path to a JSON5 value, the same pairs section 3 wrote by hand. Add a
+fourth test to `zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test.dart`:
 
 ```dart
-import 'package:sensor_core/sensor_core.dart';
-import 'package:test/test.dart';
-
-void main() {
-  test('a sensor node and a collector find each other on loopback', () async {
-    final sensorNode = ZenohService(SessionSettings.sensorNode());
-    final collectorNode = ZenohService(SessionSettings.collectorNode());
-    addTearDown(sensorNode.dispose);
-    addTearDown(collectorNode.dispose);
-
-    await sensorNode.open();
-    await collectorNode.open();
-
-    expect(collectorNode.peerIds, contains(sensorNode.zid));
-    expect(sensorNode.peerIds, contains(collectorNode.zid));
-    expect(collectorNode.zid, isNot(sensorNode.zid));
-  });
-
-  test('a service has an identity once it is open', () async {
-    final sensorNode = ZenohService(SessionSettings.sensorNode());
-    addTearDown(sensorNode.dispose);
-
-    await sensorNode.open();
-
-    expect(sensorNode.zid, isNotEmpty);
-  });
-
-  test('two services have different identities', () async {
-    final sensorNode = ZenohService(SessionSettings.sensorNode());
-    final collectorNode = ZenohService(SessionSettings.collectorNode());
-    addTearDown(sensorNode.dispose);
-    addTearDown(collectorNode.dispose);
-
-    await sensorNode.open();
-    await collectorNode.open();
-
-    expect(collectorNode.zid, isNot(sensorNode.zid));
-  });
+⋮
 
   test('neither side announces itself on the network', () {
     final sensorSettings = SessionSettings.sensorNode().asJson5;
@@ -1190,59 +1115,10 @@ scouting off, and neither has been told where the other is. That is exactly what
 situation every program in this guide starts from. Nothing finds anything until it is given an address.
 
 The sensor node waits at an address; the collector goes to it. That is data again, so the test is of the same kind as
-the last one. Replace `zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test.dart` with this, which adds
-a fifth test:
+the last one. Add a fifth test to `zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test.dart`:
 
 ```dart
-import 'package:sensor_core/sensor_core.dart';
-import 'package:test/test.dart';
-
-void main() {
-  test('a sensor node and a collector find each other on loopback', () async {
-    final sensorNode = ZenohService(SessionSettings.sensorNode());
-    final collectorNode = ZenohService(SessionSettings.collectorNode());
-    addTearDown(sensorNode.dispose);
-    addTearDown(collectorNode.dispose);
-
-    await sensorNode.open();
-    await collectorNode.open();
-
-    expect(collectorNode.peerIds, contains(sensorNode.zid));
-    expect(sensorNode.peerIds, contains(collectorNode.zid));
-    expect(collectorNode.zid, isNot(sensorNode.zid));
-  });
-
-  test('a service has an identity once it is open', () async {
-    final sensorNode = ZenohService(SessionSettings.sensorNode());
-    addTearDown(sensorNode.dispose);
-
-    await sensorNode.open();
-
-    expect(sensorNode.zid, isNotEmpty);
-  });
-
-  test('two services have different identities', () async {
-    final sensorNode = ZenohService(SessionSettings.sensorNode());
-    final collectorNode = ZenohService(SessionSettings.collectorNode());
-    addTearDown(sensorNode.dispose);
-    addTearDown(collectorNode.dispose);
-
-    await sensorNode.open();
-    await collectorNode.open();
-
-    expect(collectorNode.zid, isNot(sensorNode.zid));
-  });
-
-  test('neither side announces itself on the network', () {
-    final sensorSettings = SessionSettings.sensorNode().asJson5;
-    final collectorSettings = SessionSettings.collectorNode().asJson5;
-
-    for (final settings in [sensorSettings, collectorSettings]) {
-      expect(settings, containsPair('mode', '"peer"'));
-      expect(settings, containsPair('scouting/multicast/enabled', 'false'));
-      expect(settings, containsPair('scouting/gossip/enabled', 'false'));
-    }
-  });
+⋮
 
   test('the collector connects to where the sensor node listens', () {
     const address = '["tcp/127.0.0.1:7447"]';
@@ -1678,69 +1554,10 @@ promise made in prose is either backed by a test or withdrawn, so both get one. 
 section 8 did not need yet — disposing more than once — because from now on the container disposes the service, and
 nothing may break if something else already did.
 
-Replace `zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test.dart` with this, which adds the three:
+Add the three to `zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test.dart`:
 
 ```dart
-import 'package:sensor_core/sensor_core.dart';
-import 'package:test/test.dart';
-
-void main() {
-  test('a sensor node and a collector find each other on loopback', () async {
-    final sensorNode = ZenohService(SessionSettings.sensorNode());
-    final collectorNode = ZenohService(SessionSettings.collectorNode());
-    addTearDown(sensorNode.dispose);
-    addTearDown(collectorNode.dispose);
-
-    await sensorNode.open();
-    await collectorNode.open();
-
-    expect(collectorNode.peerIds, contains(sensorNode.zid));
-    expect(sensorNode.peerIds, contains(collectorNode.zid));
-    expect(collectorNode.zid, isNot(sensorNode.zid));
-  });
-
-  test('a service has an identity once it is open', () async {
-    final sensorNode = ZenohService(SessionSettings.sensorNode());
-    addTearDown(sensorNode.dispose);
-
-    await sensorNode.open();
-
-    expect(sensorNode.zid, isNotEmpty);
-  });
-
-  test('two services have different identities', () async {
-    final sensorNode = ZenohService(SessionSettings.sensorNode());
-    final collectorNode = ZenohService(SessionSettings.collectorNode());
-    addTearDown(sensorNode.dispose);
-    addTearDown(collectorNode.dispose);
-
-    await sensorNode.open();
-    await collectorNode.open();
-
-    expect(collectorNode.zid, isNot(sensorNode.zid));
-  });
-
-  test('neither side announces itself on the network', () {
-    final sensorSettings = SessionSettings.sensorNode().asJson5;
-    final collectorSettings = SessionSettings.collectorNode().asJson5;
-
-    for (final settings in [sensorSettings, collectorSettings]) {
-      expect(settings, containsPair('mode', '"peer"'));
-      expect(settings, containsPair('scouting/multicast/enabled', 'false'));
-      expect(settings, containsPair('scouting/gossip/enabled', 'false'));
-    }
-  });
-
-  test('the collector connects to where the sensor node listens', () {
-    const address = '["tcp/127.0.0.1:7447"]';
-    final sensorSettings = SessionSettings.sensorNode().asJson5;
-    final collectorSettings = SessionSettings.collectorNode().asJson5;
-
-    expect(sensorSettings, containsPair('listen/endpoints', address));
-    expect(sensorSettings, containsPair('connect/endpoints', '[]'));
-    expect(collectorSettings, containsPair('listen/endpoints', '[]'));
-    expect(collectorSettings, containsPair('connect/endpoints', address));
-  });
+⋮
 
   test('a collector opens even when no sensor node is listening', () async {
     final collectorNode = ZenohService(SessionSettings.collectorNode());
