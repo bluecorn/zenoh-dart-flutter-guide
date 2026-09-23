@@ -23,9 +23,10 @@ You write every line yourself; nothing here is generated or cloned.
 | 0 | **[Getting started](chapters/00-getting-started.md)** | the toolchain, a git repository holding a Dart project that depends on `zenoh_dart`, and two of the package's example programs talking to each other in two terminals |
 | 1 | **[A session of your own](chapters/01-a-session-of-your-own.md)** | a session opened with a configuration you wrote, behind `ZenohService`, the one class that imports the package, in a core package that a pub workspace shares with the phone app to come; your first tests, red then green; the program wired by a provider container |
 
-The rest are being written. Chapter 2 puts the sensor node on an Android device and chapter 3 gives the laptop the
-program that watches it; from there each chapter adds one zenoh idea to both programs at once — serialization,
-queryables, queries, commands, liveliness, quality of service, lifecycle — and the last one goes beyond one machine.
+The rest are being written. Chapter 2 puts the sensor node on the Android emulator and then on a phone, and chapter 3
+gives the laptop the program that watches it; from there each chapter adds one zenoh idea to both programs at once —
+the phone on your network, serialization, queryables, queries, commands, liveliness, quality of service, lifecycle —
+and the last one goes beyond your network.
 
 ## Before you start
 
@@ -34,8 +35,9 @@ queryables, queries, commands, liveliness, quality of service, lifecycle — and
 - **Some Dart, and enough Flutter to have finished Flutter's first codelab.** The guide does not teach the languages.
 - **No zenoh needed.** If you do know zenoh already, from C, C++, Python, Rust or ROS 2, the chapters carry short asides
   that say what is the same here and what is not.
-- **An Android device or emulator, from chapter 2 on**, with `adb`. On an emulator the system image must be
-  `x86_64`, which is one of the three Android architectures `zenoh_dart` ships a library for.
+- **An Android emulator and an Android phone, from chapter 2 on**, with `adb`. The emulator's system image must be
+  `x86_64`, which is one of the three Android architectures `zenoh_dart` ships a library for; the phone works as it
+  is, on a USB cable first and on your Wi-Fi network from chapter 5.
 - Everything else — the SDK, the editor — is named in the chapter that first needs it, with the version it was checked
   with; installing it is yours to do. Chapter 0 starts from an empty folder.
 

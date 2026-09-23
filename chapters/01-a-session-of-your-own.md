@@ -363,13 +363,19 @@ publish_to: none
 environment:
   sdk: ^3.13.2
 
+dependencies:
+  sensor_core: ^1.0.0
+
 workspace:
   - apps/sensorctl
   - packages/sensor_core
 ```
 
 This package holds no code and is never published — `publish_to: none` says so. It exists to name the members and to
-own the one resolution they share.
+own the one resolution they share. It also depends on `sensor_core`, although it imports nothing: `dart test` builds a
+package's native libraries only for the package of the folder it is run in and that package's dependencies, so a top
+folder that depended on nothing would leave the core's tests, run from here, without zenoh's library. With the
+dependency, running them from here builds it.
 
 **4. Tell each package that it belongs to the workspace.** Add one line, `resolution: workspace`, to each member's
 `pubspec.yaml`. `zenoh_sensors/apps/sensorctl/pubspec.yaml` becomes:
@@ -463,7 +469,9 @@ connected to 0 peers:
 **From here, programs and tests are run from `zenoh_sensors`,** not from inside a package. `fvm dart run
 sensorctl:sensorctl` for the program, `fvm dart test packages/sensor_core` for the core's tests. The reason is the
 library those build hooks staged: it is at the top now, and a program started from inside `apps/sensorctl` cannot find
-it — you just deleted the copy that was hiding that. The next sections lean on this, and so does every chapter after.
+it — you just deleted the copy that was hiding that. And the tests find it because the top folder's `pubspec.yaml`
+depends on `sensor_core`: `dart test` stages native libraries for the folder's own package and its dependencies, and
+nothing else. The next sections lean on this, and so does every chapter after.
 
 **8. Move the editor with it.** All three entries in `zenoh_sensors/.vscode/launch.json` name a folder that programs
 can no longer start in. Replace the whole file:
@@ -1822,13 +1830,13 @@ exactly as `sensorctl` does now — the same `ZenohService`, opened from `Sessio
 tests, run on the laptop. The package boundary is also what keeps the first rule enforceable: `zenoh_dart` is
 `sensor_core`'s dependency, and a program that wants zenoh gets the service.
 
-**What comes next.** Chapter 2 builds the sensor node itself: a Flutter app on an Android device, in this same
-workspace, depending on this same `sensor_core` — a session opened from `SessionSettings.sensorNode()`, the device's
+**What comes next.** Chapter 2 builds the sensor node itself: a Flutter app on the Android emulator and then on a
+phone, in this same workspace, depending on this same `sensor_core` — a session opened from `SessionSettings.sensorNode()`, the device's
 accelerometer behind a service of its own, and a publisher putting readings on `sensor/phone/accel`, which the
 package's `z_sub` receives on your laptop. Chapter 3 builds `watch` and the layers to the left of the service — a
 repository that owns the key expressions, a view model, and the terminal as the view — each tested against a stand-in
 for the one to its right; and `z_sub` retires. Chapter 4 adds `simulate`, a second sensor node inside `sensorctl`
-itself, for the days when no device is at hand.
+itself, for the days when you would rather not start a device.
 
 ## 11 — Files and versions at the end of this chapter
 

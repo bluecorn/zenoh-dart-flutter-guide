@@ -140,12 +140,14 @@ runs from `fvm`.
 > need it; this guide never calls it, because every command goes through `fvm` and the project's own `.fvmrc`, and the
 > next section points VS Code at the same SDK.
 
-**5. An Android device or emulator, and `adb`.** Nothing in this chapter or the next uses them; from chapter 2 the
-sensor node runs on a device. `adb` comes with the Android SDK's platform tools, and the emulator with the SDK itself —
-this guide was checked with adb 1.0.41 (37.0.1) and emulator 37.1.11, against a virtual device on API 37. **The one
-requirement is the architecture:** `zenoh_dart` ships zenoh's native library for Android on `arm64-v8a`, `armeabi-v7a`
-and `x86_64`, so an emulator on this laptop needs an **x86_64** system image, and a phone on USB works as it is.
-Installing the SDK and creating a virtual device are Android's own business, and
+**5. An Android emulator, an Android phone, and `adb`.** Nothing in this chapter or the next uses them; from chapter 2
+the sensor node runs on the emulator and then on a phone over its USB cable, and from chapter 5 the phone is on your
+Wi-Fi network. `adb` comes with the Android SDK's platform tools, and the emulator with the SDK itself — this guide was
+checked with adb 1.0.41 (37.0.1) and emulator 37.1.11, against a virtual device on API 37, and with a Pixel 9a on
+Android 17. **The one requirement is the architecture:** `zenoh_dart` ships zenoh's native library for Android on
+`arm64-v8a`, `armeabi-v7a` and `x86_64`, so the virtual device needs an **x86_64** system image, the kind that runs on an
+x86_64 machine, and a phone works as it is. Installing the SDK, creating a virtual device and turning on a phone's
+developer options are Android's own business, and
 [its documentation](https://developer.android.com/studio/run/managing-avds) describes them; this guide only uses what
 you have.
 
