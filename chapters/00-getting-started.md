@@ -26,7 +26,7 @@ this chapter explains where it comes from, so that it does not stop you the firs
 > **If you already know zenoh.** The package's examples mirror the zenoh-c examples flag for flag: `z_sub` and `z_put` do
 > here what they do in C, with the same options. What is new to you is Dart's tooling, and this chapter is mostly that.
 
-> **If you already know Flutter.** There is no app until Part 2. The Flutter SDK is installed now only because it carries
+> **If you already know Flutter.** There is no app until chapter 2. The Flutter SDK is installed now only because it carries
 > the Dart SDK the guide uses everywhere, pinned per project with `fvm`. If you have never used `fvm`, this chapter shows
 > the three commands you need.
 
@@ -68,9 +68,10 @@ The section *Two programs, two terminals* below says how, and why.
 **A Linux machine on x86_64.** That is the one hard requirement: the package ships zenoh's native library for Linux on
 x86_64 and for Android, and for nothing else, so the laptop side of this guide cannot run on macOS or Windows. The
 library needs glibc 2.34 or newer, which any distribution from the last few years has. Nothing from Android is needed
-until Part 2; the Android SDK and the emulator are installed in chapter 11, when the phone app begins.
+in this chapter or the next; from chapter 2 on, when the sensor node moves onto a phone, you also need the last two
+tools below.
 
-Four tools, in this order.
+Five tools, in this order.
 
 **1. git.** fvm fetches Flutter with git, and the folder you build in is a git repository from its first minute. Most
 Linux systems have git already; check:
@@ -105,8 +106,8 @@ fvm --version
 This guide was checked with 4.3.1; a newer version is fine.
 
 **3. The Flutter SDK, through fvm.** Flutter carries the Dart SDK, and this guide uses Flutter's copy of Dart everywhere,
-even in Part 1 where there is no app, so that Part 2 changes nothing about the tools. Install the version this guide was
-checked with:
+even in this chapter, where there is no app, so that the app changes nothing about the tools when it arrives. Install
+the version this guide was checked with:
 
 ```sh
 fvm install 3.47.2
@@ -139,6 +140,15 @@ runs from `fvm`.
 > need it; this guide never calls it, because every command goes through `fvm` and the project's own `.fvmrc`, and the
 > next section points VS Code at the same SDK.
 
+**5. An Android device or emulator, and `adb`.** Nothing in this chapter or the next uses them; from chapter 2 the
+sensor node runs on a device. `adb` comes with the Android SDK's platform tools, and the emulator with the SDK itself —
+this guide was checked with adb 1.0.41 (37.0.1) and emulator 37.1.11, against a virtual device on API 37. **The one
+requirement is the architecture:** `zenoh_dart` ships zenoh's native library for Android on `arm64-v8a`, `armeabi-v7a`
+and `x86_64`, so an emulator on this laptop needs an **x86_64** system image, and a phone on USB works as it is.
+Installing the SDK and creating a virtual device are Android's own business, and
+[its documentation](https://developer.android.com/studio/run/managing-avds) describes them; this guide only uses what
+you have.
+
 **About versions.** Every version number in this guide is the lowest the chapter was checked with, and a newer one is
 expected to work. Each chapter ends with the exact versions it was checked with: the tools, the SDK, and the packages your
 `pubspec.yaml` names. If a listing
@@ -150,7 +160,7 @@ names, `1.0.0-rc.1`, followed by `fvm dart pub get`.
 
 Everything you build in this guide lives in one folder, `zenoh_sensors`, and that folder is a git repository from its
 first minute. In this chapter it holds one small command-line program, `sensorctl`; from the next chapter on it also holds the code that program shares with the phone
-app, and in Part 2 the app itself. Put it wherever you keep your projects; your home folder will do. From here on, this
+app, and from chapter 2 the app itself. Put it wherever you keep your projects; your home folder will do. From here on, this
 guide names every folder from `zenoh_sensors` down: `zenoh_sensors/apps/sensorctl` is the program's folder, wherever
 `zenoh_sensors` itself lives.
 
@@ -252,7 +262,7 @@ that the file reads:
 }
 ```
 
-The first line is fvm's, and names the Flutter SDK. The second is yours, and everything in Part 1 depends on it. The
+The first line is fvm's, and names the Flutter SDK. The second is yours, and everything you build depends on it. The
 program you are about to create is plain Dart, and for a plain Dart project the Dart extension uses `dart.sdkPath` if it
 is set, then the first `dart` on your `PATH`, and only after those the Flutter SDK named on the first line. With the
 second line, the editor runs the same Dart as `fvm dart`, whatever else is on your `PATH`. `.fvm/flutter_sdk` is a link
@@ -582,7 +592,7 @@ that zenoh runs on your machine.
 
 The architecture starts in the next chapter. Both applications in this guide are built in layers, in the pattern
 Flutter's [architecture guide](https://docs.flutter.dev/app-architecture/guide) calls MVVM, for model, view and view
-model. By the end of Part 1, `sensorctl` has these layers, with the terminal as its view:
+model. By the end of chapter 3, `sensorctl` has these layers, with the terminal as its view:
 
 ```
 view  →  view model  →  repository  →  codec  →  ZenohService  →  zenoh_dart

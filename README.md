@@ -9,9 +9,9 @@ and run them against each other:
 - **`sensor_node`**, a Flutter application on Android — the sensor node. It reads the device's accelerometer and
   gyroscope, publishes what it reads, answers the collector's questions and takes its commands.
 
-Part 1 needs no phone: the command-line program talks to a stand-in sensor node you write, and to the example programs
-that come with the `zenoh_dart` package. Part 2 replaces the stand-in with a real device, and the program does not
-change — which is most of what zenoh is for.
+By chapter 3 the two are talking: the phone publishes what its accelerometer reads, and the command-line program on
+your laptop displays it. From chapter 4 a stand-in sensor node inside `sensorctl` takes the phone's place whenever no
+device is at hand, and the program watching it cannot tell the difference — which is most of what zenoh is for.
 
 Both programs follow the same architecture, MVVM, and share one pure-Dart package that holds everything touching zenoh.
 You write every line yourself; nothing here is generated or cloned.
@@ -23,9 +23,9 @@ You write every line yourself; nothing here is generated or cloned.
 | 0 | **[Getting started](chapters/00-getting-started.md)** | the toolchain, a git repository holding a Dart project that depends on `zenoh_dart`, and two of the package's example programs talking to each other in two terminals |
 | 1 | **[A session of your own](chapters/01-a-session-of-your-own.md)** | a session opened with a configuration you wrote, behind `ZenohService`, the one class that imports the package, in a core package that a pub workspace shares with the phone app to come; your first tests, red then green; the program wired by a provider container |
 
-The rest are being written, in the order the books take: publishers, subscribers,
-serialization, queryables, queries, liveliness, quality of service and lifecycle — then the Flutter application on
-Android, and the network beyond one machine.
+The rest are being written. Chapter 2 puts the sensor node on an Android device and chapter 3 gives the laptop the
+program that watches it; from there each chapter adds one zenoh idea to both programs at once — serialization,
+queryables, queries, commands, liveliness, quality of service, lifecycle — and the last one goes beyond one machine.
 
 ## Before you start
 
@@ -34,8 +34,10 @@ Android, and the network beyond one machine.
 - **Some Dart, and enough Flutter to have finished Flutter's first codelab.** The guide does not teach the languages.
 - **No zenoh needed.** If you do know zenoh already, from C, C++, Python, Rust or ROS 2, the chapters carry short asides
   that say what is the same here and what is not.
-- Everything else — the SDK, the editor, the Android emulator — is installed in the chapter that first needs it.
-  Chapter 0 starts from an empty folder.
+- **An Android device or emulator, from chapter 2 on**, with `adb`. On an emulator the system image must be
+  `x86_64`, which is one of the three Android architectures `zenoh_dart` ships a library for.
+- Everything else — the SDK, the editor — is named in the chapter that first needs it, with the version it was checked
+  with; installing it is yours to do. Chapter 0 starts from an empty folder.
 
 Each chapter ends with the exact versions it was checked with, and asks for those or newer.
 

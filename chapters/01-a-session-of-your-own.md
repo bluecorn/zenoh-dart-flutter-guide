@@ -29,12 +29,12 @@ guide says where it is and who it talks to.
 > taken from flags, because the topology is fixed from here on — every program a peer, multicast scouting and gossip
 > off, the sensor node listening on the loopback and the collectors connecting to it. And the zenoh calls go behind
 > one class
-> immediately, because the Flutter app in Part 2 shares that class rather than reimplementing it.
+> immediately, because the Flutter app in chapter 2 shares that class rather than reimplementing it.
 
 > **If you have not used a pub workspace, or Riverpod outside Flutter.** Both arrive in this chapter with the smallest
 > example that needs them, and both are explained where they appear: a workspace is one `pubspec.yaml` at the top that
 > resolves the dependencies of every package below it, and a `ProviderContainer` is Riverpod without a widget tree —
-> the same providers the Flutter app will use in Part 2.
+> the same providers the Flutter app will use in chapter 2.
 
 ## 2 — What to read
 
@@ -303,7 +303,7 @@ when there is something of its own to test. The rule the deletion follows is wor
 
 ## 4 — A workspace, and a package to share
 
-The zenoh code you are about to write is not only `sensorctl`'s. In Part 2 a Flutter app on a phone opens a session of
+The zenoh code you are about to write is not only `sensorctl`'s. In the next chapter a Flutter app on a phone opens a session of
 its own, with the same class, the same settings and the same tests — so it belongs in a package both programs can
 depend on, not inside one of them. This section makes that package and the arrangement that lets two programs share it:
 a **pub workspace**, one folder at the top that resolves the dependencies of everything below it.
@@ -1305,8 +1305,8 @@ class SessionSettings {
 }
 ```
 
-`nodeEndpoint` is the one address in Part 1: the loopback, port 7447, where `z_sub` waited in chapter 0 and where the
-stand-in sensor node will wait from chapter 2. `listen/endpoints: []` on the collector is the setting section 3
+`nodeEndpoint` is the one address this guide uses until its last chapter: the loopback, port 7447, where `z_sub`
+waited in chapter 0 and where the sensor node on your phone will wait from chapter 2. `listen/endpoints: []` on the collector is the setting section 3
 explained: without it, a peer listens on every interface, on a port picked at random. And `_json5List` writes a Dart
 list as the JSON5 text `insertJson5` wants — `["tcp/127.0.0.1:7447"]`, or `[]`.
 
@@ -1516,7 +1516,7 @@ in `main`. For one object that is fine. From chapter 3 the program has view mode
 needs a codec, which needs the service — and a test has to be able to swap any one of them for a stand-in. The guide's
 way to build that graph is [Riverpod](https://riverpod.dev): every object is declared once, as a *provider*, next to
 the others in one file, and a *provider container* builds them on demand, disposes them together, and lets a test
-override any one of them. In the Flutter app of Part 2 the same providers live under a `ProviderScope` widget; a
+override any one of them. In the Flutter app of chapter 2 the same providers live under a `ProviderScope` widget; a
 `ProviderContainer` is that without a widget tree, which is why a pure-Dart program can use it.
 
 Replace `zenoh_sensors/apps/sensorctl/pubspec.yaml` once more — `riverpod` is new:
@@ -1579,8 +1579,8 @@ zenoh_sensors/
 
 Two providers, and the split between them is deliberate. `sessionSettingsProvider` says which side of the topology
 this program is on: a collector. It is a provider of its own rather than a constant inside the next one because it is
-the entry that gets overridden — by a test, and by chapter 2's `simulate`, which is a sensor node inside the same
-program. `zenohServiceProvider` builds the service from it — `ref.watch` reads another provider's value — and
+the entry that gets overridden — by a test, and by `simulate`, the sensor node that lives inside this same program
+from chapter 4. `zenohServiceProvider` builds the service from it — `ref.watch` reads another provider's value — and
 `ref.onDispose(service.dispose)` ties the session's life to the container's: when the container is disposed, so is
 the service, and the session closes. That is the rule from here to the end of the guide: **the service is disposed
 through the provider**, never by hand.
@@ -1817,16 +1817,18 @@ and a pure-Dart program cannot use it, and one mechanism for both programs is wo
 on `lib/config/providers.dart` is the one place a program's objects are declared, the container is what builds them,
 and an override is how a test replaces one.
 
-**Why the core package exists before the app that will share it.** In Part 2 the phone app depends on `sensor_core`
+**Why the core package exists before the app that will share it.** In chapter 2 the phone app depends on `sensor_core`
 exactly as `sensorctl` does now — the same `ZenohService`, opened from `SessionSettings.sensorNode()`, and the same
 tests, run on the laptop. The package boundary is also what keeps the first rule enforceable: `zenoh_dart` is
 `sensor_core`'s dependency, and a program that wants zenoh gets the service.
 
-**What comes next.** Chapter 2 gives `sensorctl` its second role: `simulate`, the stand-in sensor node, built from
-`SessionSettings.sensorNode()` in the same program, publishing made-up readings that the package's `z_sub` can watch.
-Chapter 3 builds `watch` and the layers to the left of the service — a repository that owns the key expressions, a
-view model, and the terminal as the view — each tested against a stand-in for the one to its right; and `z_sub`
-retires.
+**What comes next.** Chapter 2 builds the sensor node itself: a Flutter app on an Android device, in this same
+workspace, depending on this same `sensor_core` — a session opened from `SessionSettings.sensorNode()`, the device's
+accelerometer behind a service of its own, and a publisher putting readings on `sensor/phone/accel`, which the
+package's `z_sub` receives on your laptop. Chapter 3 builds `watch` and the layers to the left of the service — a
+repository that owns the key expressions, a view model, and the terminal as the view — each tested against a stand-in
+for the one to its right; and `z_sub` retires. Chapter 4 adds `simulate`, a second sensor node inside `sensorctl`
+itself, for the days when no device is at hand.
 
 ## 11 — Files and versions at the end of this chapter
 
