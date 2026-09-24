@@ -38,8 +38,9 @@ and the last one goes beyond your network.
 - **An Android emulator and an Android phone, from chapter 2 on**, with `adb`. The emulator's system image must be
   `x86_64`, which is one of the three Android architectures `zenoh_dart` ships a library for; the phone works as it
   is, on a USB cable first and on your Wi-Fi network from chapter 5.
-- Everything else — the SDK, the editor — is named in the chapter that first needs it, with the version it was checked
-  with; installing it is yours to do. Chapter 0 starts from an empty folder.
+- **Everything else you install yourself.** fvm, the editor and its extension are named in the chapter that first needs
+  them, with the version they were checked with. fvm then fetches the Flutter SDK the project pins. Chapter 0 starts
+  from an empty folder.
 
 Each chapter ends with the exact versions it was checked with, and asks for those or newer.
 
