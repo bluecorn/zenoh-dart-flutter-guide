@@ -60,8 +60,9 @@ Both books use Rust. Read them for the ideas and the shapes of the API. Five thi
 | `session.close().await.unwrap()` | `session.close()`, which returns nothing, needs no `await`, and is safe to call twice |
 
 **Opening a session completes the handshake before it returns.** Chapter 4 makes the point briefly. Scouting, binding
-and any connection the configuration asked for are all finished by the time you have the session, and this chapter
-relies on that from its first test to its last line.
+and the first attempt at each connection the configuration asked for are all finished by the time you have the
+session. This chapter relies on that from its first test to its last line. A connection that failed keeps being
+retried in the background, as section 3 says.
 
 > **A note on versions.** *Zenoh Programming in Rust* is written against Zenoh 1.4.0, and `zenoh_dart` 1.0.0-rc.1 is
 > built on 1.8.0, so a detail there may have changed since. Every statement this guide makes about the Dart API was
