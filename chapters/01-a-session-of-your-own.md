@@ -134,9 +134,9 @@ peers ids:
 … ERROR ThreadId(…) zenoh::api::admin: Unable to publish transport event: session closed
 ```
 
-**Each session has its own id.** `own id` is 16 bytes, printed as 32 hexadecimal characters. A new one is made every
-time a session opens, so yours differs from the one above. Zenoh uses the id in timestamps and in the names in its
-admin space. In this guide you use it to tell one running program from another.
+**Each session has its own id.** `own id` is 16 bytes, printed as up to 32 hexadecimal characters, because zenoh drops
+leading zeros. A new one is made every time a session opens, so yours differs from the one above. Zenoh uses the id in
+timestamps and in the names in its admin space. In this guide you use it to tell one running program from another.
 
 **`routers ids:` is empty.** A router is a separate program, `zenohd`, that sessions connect through instead of
 connecting to each other. This guide does not use one until chapter 5, so the line needs no fix.
@@ -1038,7 +1038,7 @@ class ZenohService {
     _session = await Session.open(config: Config());
   }
 
-  /// The session's identity: thirty-two hexadecimal characters.
+  /// The session's identity: up to thirty-two hexadecimal characters.
   String get zid => _opened.zid.toHexString();
 
   /// The identities of the peers this session is connected to.
@@ -1223,7 +1223,7 @@ class ZenohService {
     _session = await Session.open(config: _config());
   }
 
-  /// The session's identity: thirty-two hexadecimal characters.
+  /// The session's identity: up to thirty-two hexadecimal characters.
   String get zid => _opened.zid.toHexString();
 
   /// The identities of the peers this session is connected to.
@@ -1296,7 +1296,7 @@ class ZenohService {
     _session = await Session.open(config: _config());
   }
 
-  /// The session's identity: thirty-two hexadecimal characters.
+  /// The session's identity: up to thirty-two hexadecimal characters.
   String get zid => _opened.zid.toHexString();
 
   /// The identities of the peers this session is connected to.
@@ -1537,8 +1537,9 @@ of its own. The class is unchanged, and one function is added above it. Replace
 import 'package:sensor_core/src/services/session_settings.dart';
 import 'package:zenoh_dart/zenoh.dart';
 
-/// Starts zenoh's own log at [level], printed to standard output: for a
-/// program with a terminal. Once per process, before any session opens.
+/// Starts zenoh's own log, printed to standard output: for a program with a
+/// terminal. [level] applies unless `RUST_LOG` is set. Once per process,
+/// before any session opens.
 void initZenohLogging(String level) => Zenoh.initLog(level);
 
 /// The one class that talks to zenoh. It owns the session and hands plain
@@ -1559,7 +1560,7 @@ class ZenohService {
     _session = await Session.open(config: _config());
   }
 
-  /// The session's identity: thirty-two hexadecimal characters.
+  /// The session's identity: up to thirty-two hexadecimal characters.
   String get zid => _opened.zid.toHexString();
 
   /// The identities of the peers this session is connected to.
