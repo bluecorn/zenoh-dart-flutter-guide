@@ -14,6 +14,7 @@ your laptop displays it. From chapter 4 a stand-in sensor node inside `sensorctl
 device is at hand, and the program watching it cannot tell the difference — which is most of what zenoh is for.
 
 Both programs follow the same architecture, MVVM, and share one pure-Dart package that holds everything touching zenoh.
+They are built with test-driven development, TDD: from chapter 1 on, every piece of code starts as a test that fails.
 You write every line yourself; nothing here is generated or cloned.
 
 ## The chapters

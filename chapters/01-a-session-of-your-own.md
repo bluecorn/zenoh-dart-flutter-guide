@@ -626,9 +626,11 @@ test.
 ## 5 — The test of the chapter's claim
 
 Write the test that states the chapter's claim, and watch it fail. From here on, write each test before the code it
-tests. The test makes you state what you want precisely enough to run. **If you cannot write the assertion, you do not
-yet know what you are building.** The test is also the first caller of the new code, so the way the test calls it sets
-the code's shape.
+tests. This is test-driven development, or TDD, and the rest of the guide is built this way.
+
+The test makes you state what you want precisely enough to run. **If you cannot write the assertion, you do not yet
+know what you are building.** The test is also the first caller of the new code, so the way the test calls it sets the
+code's shape.
 
 **1. State the claim in one sentence.**
 
@@ -676,8 +678,8 @@ void main() {
 ```
 
 The test opens two sessions in one Dart process, and they do to each other what `sensorctl` and `z_sub` did in two
-terminals. This is the only kind of test in the guide that opens real zenoh sessions. Zenoh is the subject, so the
-claim about zenoh is checked against zenoh, once, here. Everything built on top of this in later chapters is tested
+terminals. Zenoh is the subject, so a claim about zenoh is checked against zenoh itself. Two kinds of test in this
+guide open real sessions: the test of each chapter's claim, and the tests of `ZenohService`. Every other test runs
 against stand-ins.
 
 **The sensor node opens first.** A collector needs something to connect to, and its settings say where. Swap the two
