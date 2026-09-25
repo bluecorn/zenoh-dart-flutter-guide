@@ -22,12 +22,12 @@ You write every line yourself; nothing here is generated or cloned.
 | # | chapter | what you build |
 |---|---|---|
 | 0 | **[Getting started](chapters/00-getting-started.md)** | the toolchain, a git repository holding a Dart project that depends on `zenoh_dart`, and two of the package's example programs talking to each other in two terminals |
-| 1 | **[A session of your own](chapters/01-a-session-of-your-own.md)** | a session opened with a configuration you wrote, behind `ZenohService`, the one class that imports the package, in a core package that a pub workspace shares with the phone app to come; your first tests, red then green; the program wired by a provider container |
+| 1 | **[A session of your own](chapters/01-a-session-of-your-own.md)** | a session opened with a configuration you wrote, behind `ZenohService`, in a core package that a pub workspace shares with the phone app to come; your first tests, red then green; the program wired by a provider container |
+| 2 | **[The node on your phone](chapters/02-the-node-on-your-phone.md)** | the Flutter app `sensor_node`, in the same workspace, publishing the phone's accelerometer on `sensor/phone/accel` through the core; the chapter's claim tested against real zenoh, and the app built from its screen in; the node run on the emulator and then on a phone over its USB cable, with the package's `z_sub` receiving on the laptop |
 
-The rest are being written. Chapter 2 puts the sensor node on the Android emulator and then on a phone, and chapter 3
-gives the laptop the program that watches it; from there each chapter adds one zenoh idea to both programs at once —
-the phone on your network, serialization, queryables, queries, commands, liveliness, quality of service, lifecycle —
-and the last one goes beyond your network.
+The rest are being written. Chapter 3 gives the laptop the program that watches the phone. From there each chapter adds
+one zenoh idea to both programs at once — the phone on your network, serialization, queryables, queries, commands,
+liveliness, quality of service, lifecycle — and the last one goes beyond your network.
 
 ## Before you start
 
