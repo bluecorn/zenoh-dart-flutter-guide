@@ -67,6 +67,12 @@ relies on that from its first test to its last line.
 > built on 1.8.0, so a detail there may have changed since. Every statement this guide makes about the Dart API was
 > read in the package itself.
 
+**[`very_good_analysis`](https://pub.dev/packages/very_good_analysis), [`test`](https://pub.dev/packages/test) and
+[Riverpod](https://riverpod.dev), for more than a sentence on each piece.** You add the lint set in section 3, write
+your tests with the test package from section 5, and add Riverpod for the provider container in section 8. Each of
+their pieces gets a sentence where it first appears, on what it does in the program. For the rest, read their
+documentation.
+
 ## 3 — The program that opens a session
 
 Write your first program of your own. First run a third example, `z_info`, which does what `sensorctl` is about to

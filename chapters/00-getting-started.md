@@ -67,6 +67,9 @@ inside it. And there is no router. The books' programs find each other over the 
 over the loopback interface only. Chapter 5 brings in the network and a router. Section 6, *Two programs, two
 terminals*, says how and why.
 
+**[`args`](https://pub.dev/packages/args), for more than a sentence on it.** The package's examples read their
+command-line options with it, and you add it for them in section 6. For the rest, read its documentation.
+
 ## 3 — The toolchain
 
 **A Linux machine on x86_64.** It is the one hard requirement. The package ships zenoh's native library for Linux on
