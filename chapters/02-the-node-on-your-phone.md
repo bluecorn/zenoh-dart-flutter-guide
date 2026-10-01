@@ -438,8 +438,9 @@ Future<Session> openCollector() {
 const delivery = Duration(milliseconds: 500);
 ```
 
-`delivery` is the only timed wait in this chapter's tests. A put returns without waiting for the sample to arrive, so
-the test gives it time. Half a second is generous on the loopback. Tests may import `zenoh_dart`, but under `lib/` only
+`delivery` is the only timed wait in this chapter's tests. A put returns without waiting for its sample to arrive. A
+subscriber's declaration takes time to reach the node too, and a put made before it arrives can be lost. So a test
+gives each of them time to cross. Half a second is generous on the loopback. Tests may import `zenoh_dart`, but under `lib/` only
 the service may.
 
 **5. Write the test.** Create `zenoh_sensors/packages/sensor_core/test/repositories/sensor_node_repository_test.dart`:
@@ -467,6 +468,8 @@ void main() {
     addTearDown(subscriber.close);
     final received = <Sample>[];
     subscriber.stream.listen(received.add);
+    // The declaration travels to the node, so give it time to arrive.
+    await Future<void>.delayed(delivery);
 
     // The code to implement: a repository that publishes one reading
     // from a fake sensor, through the node's session.
@@ -793,7 +796,7 @@ fvm dart test packages/sensor_core -n 'through a publication'
 ⋮
 ```
 
-Nothing arrived, because the stub's `put` does nothing.
+Nothing arrived, because the skeleton's `put` does nothing.
 
 **Write the obvious implementation.** No constant makes a sample arrive at another session, so write the real thing.
 Replace `zenoh_sensors/packages/sensor_core/lib/src/services/zenoh_service.dart`:
@@ -2602,8 +2605,10 @@ are rules of your own. Add them to `zenoh_sensors/packages/sensor_core/test/serv
       final collector = await openCollector();
       addTearDown(collector.close);
 
-      // A put before anyone subscribes.
+      // A put before anyone subscribes, given time to cross before the
+      // subscriber exists.
       publication.put('before');
+      await Future<void>.delayed(delivery);
 
       // Subscribe late. Wait once for the declaration to reach the node's
       // side, and once for the next put to arrive.
@@ -2658,9 +2663,14 @@ fvm dart test packages/sensor_core
 
 17 tests pass.
 
-**Pub/sub keeps nothing.** A subscriber that arrives after a put never sees it. It sees only what is put after its
-declaration has reached the publisher's side. So the test waits twice, once after subscribing, for the declaration to
-travel, and once after the put.
+**Pub/sub keeps nothing.** A sample that reaches a session with no subscriber for it is dropped, and a subscriber
+declared later never sees it. Right after a collector connects, the node sends it every put until the collector's
+declarations arrive. So a put made just before a subscriber is declared can still be on its way, and the test waits
+three times:
+
+- after the first put, so that its sample has crossed before anyone subscribes
+- after subscribing, so that the declaration reaches the node
+- after the second put, so that its sample arrives
 
 A node that publishes to nobody sends its readings nowhere, and a collector that connects a minute later starts from
 the next one. Zenoh calls this data in motion. Chapter 7 gives the node a memory, and chapter 8 a way to ask for
@@ -2670,8 +2680,8 @@ it.
 afterwards is an error. It is the package's own `StateError`, because the publisher underneath is closed. Closing a
 publication twice is safe, and the repository's cancel and the service's dispose both rely on that.
 
-**What the tests guarantee:** a late subscriber sees only the puts after its declaration, a put after `dispose()` is
-an error, and a second `close()` is safe.
+**What the tests guarantee:** a subscriber never sees a sample that crossed before it was declared, a put after
+`dispose()` is an error, and a second `close()` is safe.
 
 **2. Look at what changed in the architecture.** This chapter builds the whole stack of the app, each layer with the
 least that makes the claim true:
