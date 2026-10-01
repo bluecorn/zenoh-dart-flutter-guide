@@ -1,14 +1,10 @@
 # 2 — The node on your phone
 
-This chapter follows chapters 3 and 5 of *Zenoh Programming in Rust*, *The Zenoh Data Model* and *Publishers and
-Put*, and *The Zenoh Book*'s pages on key expressions and pub/sub. It starts from `z_pub`, a program shipped with the
-`zenoh_dart` package.
-
 ## 1 — What you build, and what you will see
 
 By the end of this chapter the sensor node exists. It is a Flutter app, `sensor_node`, in the same workspace as
-`sensorctl`, and it runs on the Android emulator and then on a phone. It opens a session with chapter 1's
-`ZenohService`, from the settings that listen. It reads the device's accelerometer and publishes each reading as
+`sensorctl`, and it runs on the Android emulator and then on a phone. It opens a session with `ZenohService`, from
+the settings that listen. It reads the device's accelerometer and publishes each reading as
 text on the key expression `sensor/phone/accel`. On the laptop, the package's `z_sub` connects to the node through
 `adb` and prints what arrives:
 
@@ -21,12 +17,11 @@ On the emulator, about 15 of these arrive each second, all the same until you mo
 command line. On the phone they are your own numbers, and they change as you tilt it. The app's screen shows the
 latest reading and how many it has published.
 
-For the first time, your own code publishes and the laptop receives it. Chapter 3 replaces `z_sub` with a collector
-of your own.
+Your own code publishes, and the laptop receives it. Chapter 3 replaces `z_sub` with a collector of your own.
 
-You build it in two passes, each led by a test. First the data side: stand-ins prove the core until the chapter's
-claim holds, and then the phone's own sensor is connected to it. Then the app, from the screen in, each layer added
-when the one above needs it. By the end of the chapter all four layers of the pattern are there, each with the least
+You build it in two passes, each led by a test. First the data side: fakes prove the core until the chapter's claim
+holds, and then the phone's own sensor is connected to it. Then the app, from the screen in, each layer added when the
+one above needs it. By the end of the chapter every layer of the pattern but the codec is there, each with the least
 that makes the claim true:
 
 - the services: one for the sensor, and the shared `ZenohService` with one new thing in it
@@ -43,35 +38,25 @@ it, in sections 10 and 11.
 > router. Section 3 explains why the node declares a publisher and does not call `put` on the session.
 
 > **If you already know Flutter.** The app is `flutter create --empty`, `flutter_riverpod`, one `ConsumerWidget`, and
-> one plugin, `sensors_plus`. It is a member of a pub workspace, so you resolve and test it from the folder above it.
+> one plugin, `sensors_plus`. It is a member of a pub workspace, so you resolve and test it from the top folder.
 > `flutter run` is the only command you run inside the app's folder.
 
 ## 2 — What to read
 
-**[The Zenoh Book](https://corsaro.me/zenoh/book/core-concepts/key-expressions/), *Core Concepts → Key
-Expressions* and *[Publishers & Subscribers](https://corsaro.me/zenoh/book/core-concepts/pub-sub/)*, for the
-idea.** A key expression is zenoh's only naming system, in place of topics and URLs. Its two wildcards, `*` and `**`,
-let a subscriber ask for everything under `sensor/`. Take its naming advice too. Keys form a hierarchy of domain,
-entity and attribute, so this guide's readings live on `sensor/<node>/<kind>`.
+| | page | what to take from it |
+|---|---|---|
+| [1] zenoh.io | [*Abstractions*](https://zenoh.io/docs/manual/abstractions/), *Key* to *Publisher* | what a key and a key expression are, the three wildcards `*`, `$*` and `**`, what an encoding says, and that the first router a value reaches gives it a timestamp |
+| [2] *The Zenoh Book* | [*Core Concepts → Key Expressions*](https://corsaro.me/zenoh/book/core-concepts/key-expressions/) | its naming advice, keys as domain, entity and attribute, which this guide follows with `sensor/<node>/<kind>` |
+| [2] *The Zenoh Book* | [*Core Concepts → Publishers & Subscribers*](https://corsaro.me/zenoh/book/core-concepts/pub-sub/) | what a publisher is, and why declaring one lets routes be computed once |
+| [2] *The Zenoh Book* | [*Routing → Peer Mode*](https://corsaro.me/zenoh/book/routing/peer-mode/) | zenoh's default, where peers discover each other by multicast. This guide switches that off, and gives the sensor node an address that each collector connects to |
+| [3] *Zenoh Programming in Rust* | [chapter 3, *The Zenoh Data Model*](https://kydos.github.io/zenoh-book/chapter_03.html) | how a key is formed, and a payload as bytes with an encoding beside it |
+| [3] *Zenoh Programming in Rust* | [chapter 5, *Publishers and Put*](https://kydos.github.io/zenoh-book/chapter_05.html) | a one-shot put against a declared publisher, and when to choose a publisher. Skip *Publisher Options*, which is chapter 11 of this guide, and *Matching Listener* |
+| `sensors_plus` | [its documentation](https://pub.dev/packages/sensors_plus) | the accelerometer's stream, from section 8 |
+| `flutter_riverpod` | [its documentation](https://riverpod.dev) | Riverpod for Flutter, its `ProviderScope` and `ConsumerWidget`, from section 9 |
 
-From the pub/sub page, take what a publisher is and what a *sample* holds. A publisher is a declared intent to
-produce on a key, so routes are worked out once, not on every write. A sample is what a subscriber receives. The
-[Peer Mode](https://corsaro.me/zenoh/book/routing/peer-mode/) page describes zenoh's default, where peers find each
-other by multicast. This guide switches that off and gives each peer an address.
+**The Rust API in Dart.** *Zenoh Programming in Rust* [3] shows the API in Rust. Five things look different in Dart:
 
-**[Zenoh Programming in Rust](https://kydos.github.io/zenoh-book/chapter_03.html), chapter 3, *The Zenoh Data
-Model*, and [chapter 5, *Publishers and Put*](https://kydos.github.io/zenoh-book/chapter_05.html), for the shape of
-the API.** From chapter 3, take how a key is formed and the three wildcard forms. Take also that a payload is bytes,
-with an *encoding* beside it that says what the bytes are, and that a sample's timestamp comes from zenoh's clock, not
-yours.
-
-From chapter 5, take the difference between a one-shot put and a declared publisher, and the rule of thumb for
-choosing: more than a few writes a second calls for a publisher. Skip *Publisher Options*, which is chapter 11 of this
-guide, and *Matching Listener*.
-
-Five things look different in Dart:
-
-| in the books | in `zenoh_dart` |
+| in the book | in `zenoh_dart` |
 |---|---|
 | `session.declare_publisher(key).await` | `session.declarePublisher(keyExpr)`, with nothing to await |
 | `publisher.put(payload).encoding(…).await` | `publisher.put(text, encoding: Encoding.textPlain)`, which takes a `String` and returns nothing |
@@ -79,23 +64,13 @@ Five things look different in Dart:
 | `sample.key_expr()`, `sample.payload()`, `sample.encoding()` | `sample.keyExpr` and `sample.payload`, plain `String`s, and `sample.encoding`, a `String?`, here `'text/plain'` |
 | `ZBytes` in and out | a `String` in and out for this chapter, and bytes from chapter 6 |
 
-> **A note on versions.** *Zenoh Programming in Rust* is written against Zenoh 1.4.0, and `zenoh_dart` 1.0.0-rc.1 is
-> built on 1.8.0, so a detail there may have changed since. Every statement this guide makes about the Dart API was
-> read in the package itself.
-
-**[`sensors_plus`](https://pub.dev/packages/sensors_plus) and [`flutter_riverpod`](https://riverpod.dev), for more
-than a sentence on each piece.** You add `sensors_plus` for the sensor in section 8, and `flutter_riverpod`, Riverpod
-for Flutter, for the app's providers and view model in section 9. Each of their pieces gets a sentence where it first appears, on what it does in the app. For
-the rest, read their documentation.
-
 ## 3 — A declared publisher
 
-Run `z_pub`, the package's example of a *declared publisher*, before you write one. Chapter 0's `z_put` put one value
-and ended. The node you are about to build puts many values a second and never ends, and zenoh has a different
-object for that.
+Run `z_pub`, the package's example of a *declared publisher*, before you write one. `z_put` puts one value and ends.
+The node you are about to build puts many values a second and never ends, and zenoh has a different object for that.
 
-**1. Copy one more example.** Chapter 1 ended in the top folder. Read the package's folder from the workspace's
-package config, the one at the top, and copy the example beside the others:
+**1. Copy one more example.** Read the package's folder from the workspace's package config, the one at the top, and
+copy the example beside the others:
 
 ```sh
 # in zenoh_sensors
@@ -103,8 +78,8 @@ pkg=$(sed -n 's|.*"rootUri": "file://\(.*/zenoh_dart-[^/"]*\)".*|\1|p' .dart_too
 cp "$pkg/example/z_pub.dart" apps/sensorctl/example/
 ```
 
-**2. Start the subscriber.** In a terminal at the top folder, start `z_sub` as in chapter 1, listening on the
-loopback, and leave it running:
+**2. Start the subscriber.** In a terminal at the top folder, start `z_sub`, listening on the loopback, and leave it
+running:
 
 ```sh
 # in zenoh_sensors
@@ -118,9 +93,9 @@ Declaring Subscriber on 'demo/example/**'...
 Press CTRL-C to quit...
 ```
 
-**3. Start the publisher.** In a second terminal, also at the top folder, start `z_pub` with the three options
-`z_put` took: connect to the subscriber, no scouting, and no listener of its own. Give it no key and no value, so
-that its defaults show:
+**3. Start the publisher.** In a second terminal, also at the top folder, start `z_pub` with three options: connect to
+the subscriber, no multicast scouting, and no listener of its own. Give it no key and no value, so that its defaults
+show:
 
 ```sh
 # in zenoh_sensors
@@ -147,16 +122,16 @@ Putting Data ('demo/example/zenoh-dart-pub': '[   1] Pub from Dart!')...
 ```
 
 **The key falls under the subscriber's expression.** `z_pub`'s default key is `demo/example/zenoh-dart-pub`, and
-`z_sub` asked for `demo/example/**`, so every put matches. The two programs agree on nothing else. A subscriber names
-a *pattern*, a publisher names a *key*, and zenoh delivers where the two intersect. Section 5 makes the same
-arrangement with `sensor/**` on one side and `sensor/phone/accel` on the other.
+`z_sub` asked for `demo/example/**`, so every put matches. Apart from the address, that is all the two programs share.
+The subscriber names a *pattern*, the publisher a *key*, and zenoh delivers where the two intersect. Section 5 makes
+the same arrangement with `sensor/**` on one side and `sensor/phone/accel` on the other.
 
 **`z_pub` declares first, then puts.** `z_put` called `put` on the session once. `z_pub` first declared a publisher
 on its key, as `Declaring Publisher on …` shows, and then put through that publisher once a second.
 
-Both books give the reason. A put on the session resolves its route every time, and a declared publisher settles the
-route once and reuses it. So a program that writes more than a few times a second declares a publisher. The node
-writes on one key for as long as it runs, at least several times a second, so the service you build in section 6
+Both books [2], [3] give the reason. A put on the session resolves its route every time, and a declared publisher
+settles the route once and reuses it. So a program that writes more than a few times a second declares a publisher. The
+node writes on one key for as long as it runs, at least several times a second, so the service you build in section 6
 declares one.
 
 **Each put names its encoding.** `[   0]`, `[   1]` are `z_pub`'s own counter, as in the zenoh-c example it mirrors.
@@ -174,8 +149,8 @@ Both programs are still running. Section 4 stops them and creates the app.
 
 ## 4 — The app, in the same workspace
 
-Create the sensor node, a Flutter app, in the workspace chapter 1 made, beside `sensorctl`. Both programs then depend
-on the same `sensor_core` by name, and one `pubspec.lock` at the top holds every version. When this section is done,
+Create the sensor node, a Flutter app, in the workspace, beside `sensorctl`. From section 8, both programs depend on the
+same `sensor_core` by name, and one `pubspec.lock` at the top holds every version. When this section is done,
 `apps` holds a second folder:
 
 ```
@@ -201,7 +176,7 @@ zenoh_sensors/
 
 **1. Stop the two examples, then create the app.** `z_sub` and `z_pub` are still running from the last section.
 Press Ctrl-C in the second terminal and then in the first terminal. `z_pub` prints zenoh 1.8.0's `ERROR` line as it
-closes, the one chapter 0 explained. `z_sub` closes last, when it is connected to no one, so it prints nothing. Then,
+closes. `z_sub` closes last, when it is connected to no one, so it prints nothing. Then,
 from the top folder:
 
 ```sh
@@ -218,8 +193,8 @@ both. The tool also picks an *application id*, `com.example.sensor_node`, the na
 default is fine for an app that never leaves your devices. An app you publish gets its own id, in
 `android/app/build.gradle.kts`.
 
-> **In VS Code.** Type the command in VS Code's terminal, as in chapter 0 for `sensorctl`. Do not use the Command
-> Palette's **Flutter: New Project**. It runs the same template, but then it reopens VS Code on the new app's folder.
+> **In VS Code.** Type the command in VS Code's terminal. Do not use the Command Palette's **Flutter: New Project**. It
+> runs the same template, but then it reopens VS Code on the new app's folder.
 
 **2. Make it a member of the workspace.** Replace `zenoh_sensors/apps/sensor_node/pubspec.yaml`:
 
@@ -247,12 +222,12 @@ flutter:
   uses-material-design: true
 ```
 
-Three lines differ from the template, the same three that chapter 1 changed for `sensorctl`. The description changes
-from `A new Flutter project.` to the app's own. The version was `0.1.0+1`. The `+1` is Android's build number, which
-counts uploads to a store and stays at 1 here. `resolution: workspace` is new.
+Four lines differ from the template. The description changes from `A new Flutter project.` to the app's own.
+`publish_to` loses its quotes. The version is `1.0.0+1`, where the template wrote `0.1.0+1`. The `+1` becomes Android's
+version code, the number Android uses to tell which version of an app is newer. `resolution: workspace` is new.
 
-Keep `flutter_lints`, the lint set Flutter's template ships, until section 9. There the template's last file goes,
-and the app switches to the guide's own rules, as `sensorctl` did in chapter 1 once its template was gone.
+Keep `flutter_lints`, the lint set Flutter's template ships, until section 9. There the template's last file goes, and
+the app switches to the guide's own rules.
 
 **3. Add the app to the workspace.** The top folder's `pubspec.yaml` gains one member. Replace
 `zenoh_sensors/pubspec.yaml`:
@@ -287,13 +262,13 @@ fvm dart pub get
 - It lists the dependencies it changed, and some went *down*, such as `test` to 1.31.1. `flutter_test` pins the test
   packages it is built with, and a workspace shares one set of versions, so the core's tests now use the Flutter
   SDK's. The tests do not change.
-- The note chapter 0's `pub add` printed, about packages with newer versions it cannot use, now counts more of them.
-  These are packages the Flutter SDK pins, and you have nothing to do.
+- pub's note about packages with newer versions it cannot use counts more of them now. The Flutter SDK's pins and
+  `zenoh_dart`'s own constraints hold them back, and you have nothing to do.
 
 **5. Let the app use the network.** An Android app may open a socket only if its manifest asks for the `INTERNET`
-permission. `flutter create` asks for it only in the *debug* manifest, because Flutter's own tools need it to talk to
-a running app. Without it in the main manifest, the app's session would be refused the day you build it for release.
-Add the permission as the main manifest's second line. Replace
+permission. `flutter create` asks for it in the *debug* and *profile* manifests, because Flutter's own tools need it to
+talk to a running app. Without it in the main manifest, the app's session would be refused the day you build it for
+release. Add the permission as the main manifest's second line. Replace
 `zenoh_sensors/apps/sensor_node/android/app/src/main/AndroidManifest.xml`:
 
 ```xml
@@ -348,9 +323,9 @@ Add the permission as the main manifest's second line. Replace
 You edit nothing else in the Android project. The app runs on Android API 24 and up, Flutter's default, and the
 package needs no more than that.
 
-**6. Run the template app on the emulator.** Build the template app before any code of yours goes in, because the
-first build is the slow one and the place a missing piece of the Android SDK shows up. List your virtual devices, then
-start one by its id:
+**6. Run the template app on the emulator.** Build the template app before any code of yours goes in. The first build
+is the slow one, and the place where a missing piece of the Android SDK shows up. List your virtual devices, then start
+one by its id:
 
 ```sh
 # in zenoh_sensors
@@ -375,17 +350,16 @@ cd apps/sensor_node
 fvm flutter run
 ```
 
-`flutter run` is the only command in this guide that runs inside a package's folder. It compiles the app and has
-Gradle pack it into an APK, with zenoh's native libraries, which the package's build hook copies in. Then it installs
-the APK on the device and starts it.
+`flutter run` runs inside the app's folder. It compiles the app and has Gradle pack it into an APK, with zenoh's native
+libraries, which the package's build hook copies in. Then it installs the APK on the device and starts it.
 
-Chapter 1's rule is for programs that load the libraries from the laptop's disk. This app loads them from its own APK,
-so the rule does not apply. `flutter run` still resolves the workspace from the top, and its first lines say so.
+The rule to run from the top folder is for programs that load zenoh's libraries from the laptop's disk. This app loads
+them from its own APK, so the rule does not apply. `flutter run` still resolves the workspace from the top, and its
+first lines say so.
 
-The first build takes minutes, because Gradle downloads what it needs and compiles the Android side of Flutter once.
-Later builds take seconds. On every build, Gradle may print a few red `WARNING:` lines about a *restricted method* in
-`java.lang.System`. They come from Gradle running on a recent Java, such as the one Android Studio carries, and they
-say nothing about your app.
+The first build takes minutes, and later builds are faster. On every build, Gradle may print a few red `WARNING:` lines
+about a *restricted method* in `java.lang.System`. They come from Gradle running on a recent Java, such as the one
+Android Studio carries, and they say nothing about your app.
 
 When the build finishes, the emulator shows `Hello World!` in the middle of a white screen. The terminal prints
 `Flutter run key commands` and waits. `r` reloads the app after you change a file, and `q` stops it. Press `q` now,
@@ -401,15 +375,13 @@ cd ../..
 > same build, with the output in the Debug Console, and the red square stops it. Section 10 gives the app an entry in
 > Run and Debug.
 
-> **If you already know Flutter.** Hot reload works as usual. Nothing in this guide needs it, because each step
-> replaces files whole and runs tests from a terminal, but you can use it.
+> **If you already know Flutter.** Hot reload works as usual, and no step of this guide needs it.
 
 The app is in the workspace and builds on the emulator. Section 5 writes the test that states the chapter's claim.
 
 ## 5 — The test of the chapter's claim
 
-Write the test that states the chapter's claim, and watch it fail. The test comes first, as in chapter 1. It is the
-chapter's promise, written as code.
+Write the test that states the chapter's claim, and watch it fail. It is the chapter's promise, written as code.
 
 **1. State the claim in one sentence.** The test's name repeats it.
 
@@ -417,8 +389,8 @@ chapter's promise, written as code.
 
 **2. Make test files take turns.** The core is about to have a second test file, and both open a sensor node that
 listens on `tcp/127.0.0.1:7447`. `dart test` runs test files in parallel by default, so the second file to reach
-`open()` finds the port taken and fails. Its error names a network failure, not the port, because zenoh reports every
-failure to open with one code. Create `zenoh_sensors/dart_test.yaml`:
+`open()` finds the port taken and fails. Its error carries zenoh's one code for every failure to open, `Z_ENETWORK`,
+and does not name the port. Create `zenoh_sensors/dart_test.yaml`:
 
 ```yaml
 # Test files that open zenoh sessions share one loopback port, so they run
@@ -437,17 +409,17 @@ mkdir -p packages/sensor_core/lib/src/domain packages/sensor_core/lib/src/reposi
 mkdir -p packages/sensor_core/test/repositories packages/sensor_core/test/support
 ```
 
-`domain/` holds the model, `repositories/` the layer that owns key expressions, and `support/` what the tests share:
-stand-ins and one helper.
+`domain/` holds the model, `repositories/` the layer that owns key expressions, and `support/` what the tests share,
+fakes and one helper.
 
 **4. Write the laptop's end of the test.** The test has two ends. The node's end is the code under test: your
 `ZenohService`, which gets a publication in section 6, and the repository that uses it. The laptop's end is only a
 witness. It subscribes and collects what arrives.
 
 `ZenohService` cannot subscribe yet. Subscribing is chapter 3's subject, when `sensorctl watch` needs it. So the test
-does what `z_sub` does on the laptop, and opens a plain zenoh session straight from the package. It uses the settings
-chapter 1 wrote for the collector, `SessionSettings.collectorNode()`, so the network arrangement is chapter 1's and
-only the object is different. Create `zenoh_sensors/packages/sensor_core/test/support/collector.dart`:
+does what `z_sub` does on the laptop, and opens a plain zenoh session straight from the package. It opens it from
+`SessionSettings.collectorNode()`, so only the object differs from a collector's `ZenohService`. Create
+`zenoh_sensors/packages/sensor_core/test/support/collector.dart`:
 
 ```dart
 import 'package:sensor_core/sensor_core.dart';
@@ -466,9 +438,9 @@ Future<Session> openCollector() {
 const delivery = Duration(milliseconds: 500);
 ```
 
-`delivery` is the only wait in this chapter's tests. A put returns before the sample has traveled anywhere, so the
-test gives it time to arrive. Half a second is generous for a trip of tens of milliseconds on the loopback. Tests may
-import `zenoh_dart`, but under `lib/` only the service may.
+`delivery` is the only timed wait in this chapter's tests. A put returns without waiting for the sample to arrive, so
+the test gives it time. Half a second is generous on the loopback. Tests may import `zenoh_dart`, but under `lib/` only
+the service may.
 
 **5. Write the test.** Create `zenoh_sensors/packages/sensor_core/test/repositories/sensor_node_repository_test.dart`:
 
@@ -497,7 +469,7 @@ void main() {
     subscriber.stream.listen(received.add);
 
     // The code to implement: a repository that publishes one reading
-    // from a stand-in sensor, through the node's session.
+    // from a fake sensor, through the node's session.
     const reading = Reading(x: 0, y: 9.776, z: 0.812);
     final sensor = FakeSensorService(Stream.value(reading));
     final repository = SensorNodeRepository(zenoh, sensor, nodeName: 'phone');
@@ -516,19 +488,19 @@ void main() {
 }
 ```
 
-The test is section 3 again, with your code in the publisher's place. The node's session opens first and listens, as
-in chapter 1. The collector connects, subscribes to `sensor/**` as `z_sub` does on the laptop, and collects every
+The test has `z_sub` and `z_pub`'s arrangement, with your code in the publisher's place. The node's session opens first
+and listens. The collector connects, subscribes to `sensor/**` as `z_sub` does on the laptop, and collects every
 sample into a list.
 
-Then the code under test runs. A repository gets the service, a sensor that delivers exactly one reading, and the
+Then the code under test runs. A repository gets the service, a sensor that delivers one reading, and the
 node's name. `publish()` returns the stream of what it published, and `toList()` runs that stream to the end.
 
 The four expectations state the claim: one sample on the *key* `sensor/phone/accel`, its payload the reading as
 `x,y,z` to three decimals, marked `text/plain`, and the reading handed on for a screen to show. The numbers are the
 emulator's resting pose, which you see on the laptop in section 10.
 
-**6. Write just enough for it to compile.** Five files. Three of them are not skeletons. A model and a contract have
-no behavior to fake, and the stand-in for the sensor is whole from the start, so you write all three once, here.
+**6. Write just enough for it to compile.** Five files, and only the repository is a skeleton. A model and a contract
+have no behavior to fake, and the fake sensor is whole from the start, so you write those three once, here.
 
 The model holds one reading. Create `zenoh_sensors/packages/sensor_core/lib/src/domain/reading.dart`:
 
@@ -551,8 +523,8 @@ class Reading {
 ```
 
 The model holds the three values the claim sends, and nothing else. The time the device took the reading joins it in
-chapter 6, where time goes on the wire. It has no equality and no `copyWith`, because no test in this chapter compares
-two readings.
+chapter 6, where time goes on the wire. It has no equality and no `copyWith`, because no test needs two separate
+`Reading` objects to compare equal.
 
 The sensor's contract is an interface. Create `zenoh_sensors/packages/sensor_core/lib/src/services/sensor_service.dart`:
 
@@ -563,19 +535,17 @@ import 'package:sensor_core/src/domain/reading.dart';
 ///
 /// The accelerometer reports meters per second squared on three axes, gravity
 /// included, so a device lying flat on its back reads about 9.81 on z. The
-/// axes are the device's own: x to the right, y towards the top of the screen,
-/// z out of the screen.
+/// axes are the device's own, with the screen in its natural orientation: x to
+/// the right, y towards the top, z out of the screen.
 abstract interface class SensorService {
   /// The accelerometer's readings, as the device delivers them.
   Stream<Reading> accelerometer();
 }
 ```
 
-The interface lives in the core, but its implementation cannot, because `sensors_plus` is a Flutter plugin and needs
+The interface lives in the core. Its implementation cannot, because `sensors_plus` is a Flutter plugin and needs
 Flutter to load. The core is plain Dart, shared with `sensorctl` and tested with `dart test`. So the core keeps the
 *contract*, and the doc comment states it.
-
-Gravity is in the numbers, so a device at rest reads about 9.81 on one axis.
 
 The repository starts empty. Create
 `zenoh_sensors/packages/sensor_core/lib/src/repositories/sensor_node_repository.dart`:
@@ -619,8 +589,8 @@ export 'src/services/session_settings.dart';
 export 'src/services/zenoh_service.dart';
 ```
 
-The test proves the repository with a stand-in for the sensor, and section 8 connects the real one. The stand-in
-implements the contract above, which it imports through the exports you just replaced, and plays whatever readings
+The test proves the repository with a fake sensor, and section 8 connects the real one. The fake implements the
+contract above, which it imports through the exports you just replaced, and plays whatever readings
 the test gives it. Create
 `zenoh_sensors/packages/sensor_core/test/support/fakes.dart`:
 
@@ -637,7 +607,7 @@ class FakeSensorService implements SensorService {
 }
 ```
 
-A fake needs no doc comments. The rule is for what a package makes public, and a test's stand-ins are nobody's API.
+A fake needs no doc comments. The rule is for what a package makes public, and a test's fakes are nobody's API.
 
 **7. Run it, and read the failure.**
 
@@ -654,8 +624,8 @@ fvm dart test packages/sensor_core -n 'reaches a subscriber'
 ⋮
 ```
 
-No sample arrived on `sensor/phone/accel`. The sessions are real and connected, as chapter 1's tests showed, but the
-repository's `publish()` is a skeleton that publishes nothing. **This test stays red until section 7.** Each of its
+No sample arrived on `sensor/phone/accel`. The sessions are real and connected, and the repository's `publish()` is a
+skeleton that publishes nothing. **This test stays red until section 7.** Each of its
 four expectations is made true by a smaller test of one part, in the next two sections, and each of those is red
 before its code:
 
@@ -678,16 +648,16 @@ The outer test is red. Section 6 gives the service its publication.
 
 ## 6 — The publisher, behind the service
 
-Give the service a publication, a class of its own around the package's publisher. The service is the only file that
-imports the package. A publisher is a package object, so it cannot travel upward as it is.
+Give the service a publication, a class of its own around the package's publisher. Under `lib/`, the service is the
+only file that imports the package. A publisher is a package object, so it cannot travel upward as it is.
 
-Instead, the service hands out a *publication* of its own. It is a small class beside the service, in the same file,
-with the package's publisher inside and two methods, `put` a string and `close`. Chapter 1's rule stays true, and the
-repository never sees a type from `zenoh_dart`.
+The service hands out a *publication* of its own. It is a small class beside the service, in the same file, with the
+package's publisher inside and two methods, `put` a string and `close`. So the repository never sees a type from
+`zenoh_dart`.
 
 **Cycle 1 — a put through a publication reaches a subscriber as text.** This is the service's own test, so it lives
-in the service's file and opens real sessions, like every test there. The block shows only what changes, as in
-chapter 1, and this time the imports change too. The lines above `⋮` are the file's imports as they now read. Add two
+in the service's file, and it opens real sessions. This time the imports change too. The lines above `⋮` are the
+file's imports as they now read. Add two
 imports and a ninth test to `zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test.dart`:
 
 ```dart
@@ -732,8 +702,8 @@ import '../support/collector.dart';
 The call in the test sets the shape of the service: `declarePublication` with a key, then `put` with a string. The
 text must arrive marked `text/plain` without the caller saying so.
 
-Neither method exists yet, so first write the emptiest publication that compiles. It is chapter 1's class with one
-method added, and above it a second class, `Publication`, which that method returns. Replace
+Neither method exists yet, so first write a publication that compiles and does nothing. The service gains one
+method, and above it a second class, `Publication`, which that method returns. Replace
 `zenoh_sensors/packages/sensor_core/lib/src/services/zenoh_service.dart`:
 
 ```dart
@@ -769,16 +739,16 @@ class ZenohService {
   Session? _session;
 
   /// Opens the session with the settings. When this returns, each connection
-  /// they ask for is made, or its first attempt has failed and zenoh keeps
-  /// retrying it.
+  /// they ask for is made, or the wait set by `scouting/delay` has run out,
+  /// and zenoh keeps retrying the connections not made yet.
   Future<void> open() async {
     _session = await Session.open(config: _config());
   }
 
-  /// The session's identity: up to thirty-two hexadecimal characters.
+  /// The session's id: up to thirty-two hexadecimal characters.
   String get zid => _opened.zid.toHexString();
 
-  /// The identities of the peers this session is connected to.
+  /// The ids of the peers this session is connected to.
   List<String> get peerIds =>
       _opened.peersZid().map((id) => id.toHexString()).toList();
 
@@ -864,16 +834,16 @@ class ZenohService {
   final _publications = <Publication>[];
 
   /// Opens the session with the settings. When this returns, each connection
-  /// they ask for is made, or its first attempt has failed and zenoh keeps
-  /// retrying it.
+  /// they ask for is made, or the wait set by `scouting/delay` has run out,
+  /// and zenoh keeps retrying the connections not made yet.
   Future<void> open() async {
     _session = await Session.open(config: _config());
   }
 
-  /// The session's identity: up to thirty-two hexadecimal characters.
+  /// The session's id: up to thirty-two hexadecimal characters.
   String get zid => _opened.zid.toHexString();
 
-  /// The identities of the peers this session is connected to.
+  /// The ids of the peers this session is connected to.
   List<String> get peerIds =>
       _opened.peersZid().map((id) => id.toHexString()).toList();
 
@@ -920,12 +890,12 @@ fvm dart test packages/sensor_core -n 'through a publication'
 
 It passes.
 
-**`declarePublisher` is the declared publisher of section 3.** It takes the key and returns the package's
+**`declarePublisher` declares a publisher, as `z_pub` does.** It takes the key and returns the package's
 `Publisher`, and the service hands up a wrapper around it. Declaring needs an open session, so it goes through
 `_opened` and throws the same `StateError` as `zid` when there is none.
 
 **`Encoding.textPlain` goes on every put**, inside `Publication.put`, as in `z_pub`. The repository writes the text
-and never deals with the encoding. This is the only place the guide names this encoding, until chapter 6 replaces it.
+and never deals with the encoding. Chapter 6 replaces it.
 
 **The service closes what it declared.** Every publication goes into a list, and `dispose()` closes them before it
 closes the session. A publication can also be closed on its own, earlier. Closing one twice is safe. The package's
@@ -945,13 +915,12 @@ Build the repository in four cycles, and the outer test goes green. The reposito
 chapter it owns one, `sensor/<node>/accel`, built from the node's name. It reads the sensor, puts each reading
 through a publication as text, and hands each reading on for the screen.
 
-Each cycle runs against a *fake* service. These are *layer tests*, the second kind of test in this guide. Each tests
-one layer and fakes the layer below. Section 5's outer test runs the repository against real zenoh, and it goes green
-at the end of this section. In between, each cycle checks what the repository did, through a stand-in that records
-it.
+Each cycle runs against a *fake* service. These are *layer tests*. Each tests one layer and fakes the layer below.
+The outer test runs the repository against real zenoh, and it goes green at the end of this section. In
+between, each cycle checks what the repository did, through a fake that records it.
 
-**1. Write a stand-in for the service.** The fakes file keeps the sensor's stand-in and gains two more, for the
-service and its publications. Replace `zenoh_sensors/packages/sensor_core/test/support/fakes.dart`:
+**1. Write a fake of the service.** The fakes file keeps the fake sensor and gains two more fakes, for the service
+and its publications. Replace `zenoh_sensors/packages/sensor_core/test/support/fakes.dart`:
 
 ```dart
 import 'package:sensor_core/sensor_core.dart';
@@ -1006,20 +975,19 @@ class FakeZenohService implements ZenohService {
 }
 ```
 
-`ZenohService` is an ordinary class, not an interface, and the fake still says `implements ZenohService`. In Dart
-every class is also an interface, so a stand-in can promise the same members without inheriting a line of the real
-thing.
+`ZenohService` is an ordinary class, and the fake says `implements ZenohService`. In Dart every class is also an
+interface, so a fake can promise the same members without inheriting a line of the real thing.
 
 The fake's publications record the key they were declared on, what was put through them, and whether they were closed.
 A repository test needs to see nothing else. The five members the fake never uses answer with the least they can, as a
 fake should.
 
-*Fake* is this guide's word for every stand-in it writes by hand. In stricter words, `FakeSensorService` is a
+In this guide, every test double you write by hand is a *fake*. In stricter words, `FakeSensorService` is a
 **stub**. It hands the code under test what the test gave it, and records nothing. `FakeZenohService` and its
 publications are **spies**. They record what was asked of them, and the test reads the record afterwards.
 
 None of them is a **mock**. A mock is told in advance which calls to expect, checks them itself, and usually comes
-from a framework. This guide's tests read what a stand-in recorded after the fact, so the guide has no mocks.
+from a framework. This guide's tests read what a fake recorded after the fact, so the guide has no mocks.
 
 **Cycle 1 — the phone publishes on `sensor/phone/accel`.** Add a second test to
 `zenoh_sensors/packages/sensor_core/test/repositories/sensor_node_repository_test.dart`:
@@ -1028,7 +996,7 @@ from a framework. This guide's tests read what a stand-in recorded after the fac
 ⋮
 
   test('the phone publishes on sensor/phone/accel', () async {
-    // Stand-ins: a service that records what is declared on it, and a
+    // Fakes: a service that records what is declared on it, and a
     // sensor with nothing to deliver.
     final zenoh = FakeZenohService();
     final sensor = FakeSensorService(const Stream.empty());
@@ -1061,7 +1029,7 @@ fvm dart test packages/sensor_core -n 'the phone publishes'
 
 No publication was declared, because the skeleton's `publish()` does nothing yet.
 
-**Fake it.** Return the key as a constant, as chapter 1 did for the identity. Replace
+**Fake it.** Return the key as a constant. Replace
 `zenoh_sensors/packages/sensor_core/lib/src/repositories/sensor_node_repository.dart`:
 
 ```dart
@@ -1112,7 +1080,7 @@ It passes. The key is a constant, and the node's name is ignored, so the next cy
 ⋮
 
   test('a node named sim publishes on sensor/sim/accel', () async {
-    // Stand-ins: a service that records what is declared on it, and a
+    // Fakes: a service that records what is declared on it, and a
     // sensor with nothing to deliver.
     final zenoh = FakeZenohService();
     final sensor = FakeSensorService(const Stream.empty());
@@ -1197,7 +1165,7 @@ name, which is given once, when the repository is made.
 ⋮
 
   test('a reading is put as x,y,z to three decimals and handed on', () async {
-    // Stand-ins: a service that records what is put through it, and a
+    // Fakes: a service that records what is put through it, and a
     // sensor that delivers one reading.
     final zenoh = FakeZenohService();
     const reading = Reading(x: 0, y: 9.776, z: 0.812);
@@ -1295,7 +1263,7 @@ reading as text, then adds the reading to the stream, so the screen sees what we
 When the sensor's stream ends, this one ends too.
 
 The three lines that make the text are this chapter's wire format. They stay in the repository until chapter 6 moves
-them into a codec, the refactor that chapter is built around.
+them into a codec.
 
 **What the test guarantees:** each reading goes on the wire as `x,y,z` to three decimals, and is handed on in the
 same order.
@@ -1318,7 +1286,7 @@ import '../support/fakes.dart';
 ⋮
 
   test('cancelling the stream closes the publication', () async {
-    // Stand-ins: a service that records what is closed, and a sensor that
+    // Fakes: a service that records what is closed, and a sensor that
     // stays quiet, as a real one does between readings.
     final zenoh = FakeZenohService();
     final readings = StreamController<Reading>();
@@ -1417,16 +1385,16 @@ Run it again:
 fvm dart test packages/sensor_core -n 'cancelling'
 ```
 
-It passes. The repository uses a `StreamController` because of this cycle. An `async*` function notices that its
-listener has gone only at its next `yield`. A node cancelled while its sensor is quiet would keep its publication open
-until a reading happened to arrive.
+It passes. This cycle is why the repository's stream comes from a `StreamController`. An `async*` function notices that
+its listener has gone only at its next `yield`. A node cancelled while its sensor is quiet would keep its publication
+open until a reading happened to arrive.
 
 The controller's `onCancel` runs at the cancel, whatever the sensor is doing. It also runs when the stream ends by
 itself, which closes the publication then too, as when the outer test's sensor delivers its one reading and stops.
 
 **What the test guarantees:** cancelling the node's stream closes its publication, even while the sensor is quiet.
 
-**2. Run the outer test again.** Nothing else stands in its way:
+**2. Run the outer test again.** All four of its expectations have their code now:
 
 ```sh
 # in zenoh_sensors
@@ -1450,9 +1418,7 @@ The claim holds on the laptop. Sections 8 to 11 make it hold on a device.
 
 ## 8 — The sensor, on the device
 
-Connect the real sensor. Section 5's stand-in proved what the core does with readings, and now the phone's own
-accelerometer delivers them. Implement the sensor's contract over `sensors_plus`. This is its one implementation in
-this chapter, and it lives in the app, because the plugin does.
+Connect the real sensor. Implement `SensorService` in the app, with `sensors_plus`.
 
 **1. Add two dependencies.** The app needs the core, for `Reading` and the interface, and the plugin. Replace
 `zenoh_sensors/apps/sensor_node/pubspec.yaml`:
@@ -1500,9 +1466,10 @@ fvm dart pub get
 mkdir -p apps/sensor_node/lib/data/services apps/sensor_node/test/data/services
 ```
 
-**3. Write the test.** The plugin's stream exists only on a device. So the service takes the function that produces
-the stream as a constructor argument. By default it is the plugin's own function, and a test passes in one that plays
-events the test made. Create `zenoh_sensors/apps/sensor_node/test/data/services/device_sensor_service_test.dart`:
+**3. Write the test.** The plugin's stream needs the plugin's platform side, which a test does not have. So the service
+takes the function that produces the stream as a constructor argument. By default it is the plugin's own function, and a
+test passes in one that plays events the test made. Create
+`zenoh_sensors/apps/sensor_node/test/data/services/device_sensor_service_test.dart`:
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
@@ -1511,7 +1478,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 
 void main() {
   test('an accelerometer event becomes a reading, field for field', () async {
-    // A stand-in for the plugin's function: one event, made by the test.
+    // A fake of the plugin's function: one event, made by the test.
     final event = AccelerometerEvent(0.1, 9.8, 0.2, DateTime(2026, 9, 23, 12));
     final service = DeviceSensorService(
       events: ({samplingPeriod = SensorInterval.normalInterval}) =>
@@ -1557,11 +1524,11 @@ class DeviceSensorService implements SensorService {
 }
 ```
 
-It follows the rules the app gets in section 9, as every app file does from here: doc comments, and the `new`
-constructor chapter 1 introduced.
+It follows the rules the app gets in section 9, as the app's code under `lib/` does from here: a doc comment on every
+public name, and the `new` constructor.
 
 **5. Run it, from the top.** Run the app's tests with `flutter test`, which is `dart test` plus the Flutter
-framework. Give it the path to the test from the top folder, as for every other test:
+framework. Give it the path to the test from the top folder:
 
 ```sh
 # in zenoh_sensors
@@ -1576,9 +1543,8 @@ fvm flutter test apps/sensor_node/test/data/services/device_sensor_service_test.
 ⋮
 ```
 
-It fails on its assertion. The reading has zeros on all three axes. The first Flutter test build
-takes a little longer than a Dart one. It loads nothing from zenoh, because the app's tests never open a session and
-the package loads its native library only when something asks for it.
+It fails on its assertion. The reading has zeros on all three axes. The test loads nothing from zenoh, because the app's
+tests never open a session and the package loads its native library only when something asks for it.
 
 **6. Write the obvious implementation.** Map each event to a reading. Replace
 `zenoh_sensors/apps/sensor_node/lib/data/services/device_sensor_service.dart`:
@@ -1615,15 +1581,15 @@ fvm flutter test apps/sensor_node/test/data/services/device_sensor_service_test.
 
 It passes. `accelerometerEventStream` is the plugin's function, and `AccelerometerEvents` writes down its shape, so a
 test can pass in another function of the same shape. `{this._events = …}` is a named parameter that fills a private
-field, which Dart allows from 3.10. Outside the class its name is `events`. The class's only method has no doc
+field, which Dart allows from 3.12. Outside the class its name is `events`. The class's only method has no doc
 comment of its own, because it inherits the interface's.
 
 The mapping copies the three axes. The model fits the real sensor as it is, so nothing in the core changes. The event
 also carries the time it was taken, and `Reading` leaves it out until chapter 6, where time goes on the wire.
 
 The real sensor also has a rate, and the rate is a request. The plugin asks for its default, one reading every 200
-milliseconds, 5 a second. Android runs one sensor per device and delivers to every program at the fastest rate any of
-them asked for.
+milliseconds, 5 a second. Android runs one accelerometer, and every program that listens to it gets readings at least
+as often as the most frequent request among them, and sometimes more often.
 
 So the emulator, whose own system asks for more, gives the app about 15 readings a second. The phone this chapter was
 checked with gave about 120 while its screen was on, and about 7 with the screen off. Chapter 9 makes a command of the
@@ -1673,7 +1639,7 @@ Then resolve from the top:
 fvm dart pub get
 ```
 
-`flutter_riverpod` is chapter 1's `riverpod`, plus the widgets that put a container into a widget tree. The app
+`flutter_riverpod` is `riverpod` plus the widgets that put a container into a widget tree. The app
 keeps `flutter_lints` until step 5, because the template's `main.dart` stays until then and would not pass the
 guide's rules. Then create the folders:
 
@@ -1684,8 +1650,8 @@ mkdir -p apps/sensor_node/test/ui/node apps/sensor_node/test/support
 ```
 
 **1. Write the screen's test.** Start from what the user sees. The least that shows the node at work is the latest
-reading, to three decimals, and how many readings there have been. The test's name is its claim: the screen shows the
-latest reading and the count. Create `zenoh_sensors/apps/sensor_node/test/ui/node/node_screen_test.dart`:
+reading, to three decimals, and how many readings there have been. The test's name is its claim, that the screen
+shows the latest reading and the count. Create `zenoh_sensors/apps/sensor_node/test/ui/node/node_screen_test.dart`:
 
 ```dart
 import 'package:flutter/material.dart';
@@ -1700,7 +1666,7 @@ void main() {
   testWidgets('the screen shows the latest reading and the count', (
     tester,
   ) async {
-    // Stand-in: a view model that holds a fixed state.
+    // A fake: a view model that holds a fixed state.
     final container = ProviderContainer.test(
       overrides: [
         nodeViewModelProvider.overrideWith(
@@ -1726,11 +1692,11 @@ void main() {
 }
 ```
 
-The test needs three things that do not exist yet: the view model's state and its provider, a stand-in view model that
-holds a fixed state, and the screen. Write the emptiest of each.
+The test needs three things that do not exist yet: the view model's state and its provider, a fake view model that
+holds a fixed state, and the screen. Write the least of each that compiles.
 
 The screen reads its state from a view model. A view model holds the data its screen needs, shaped for that screen.
-The emptiest one holds a state and never changes it. Create
+The least one holds a state and never changes it. Create
 `zenoh_sensors/apps/sensor_node/lib/ui/node/node_view_model.dart`:
 
 ```dart
@@ -1763,10 +1729,11 @@ final nodeViewModelProvider = NotifierProvider<NodeViewModel, NodeState>(
 
 `build` returns the state the view model starts with: no reading yet, and a count of 0.
 
-`NodeViewModel` is a Riverpod `Notifier`, and `NodeState` is the state it holds. When a `Notifier` replaces its state,
-Riverpod rebuilds every widget that watches it, so the screen will show each new reading.
+`NodeViewModel` is a Riverpod `Notifier`, and `NodeState` is the state it holds. When a `Notifier` replaces its state
+with one that is not equal to it, Riverpod rebuilds every widget that watches it. `NodeState` defines no equality, so
+every new state counts, and the screen will show each new reading.
 
-The stand-in is the real view model with `build` replaced. It never listens to anything, and it holds whatever state
+The fake is the real view model with `build` replaced. It never listens to anything, and it holds whatever state
 the test gives it. Create `zenoh_sensors/apps/sensor_node/test/support/fakes.dart`:
 
 ```dart
@@ -1785,7 +1752,8 @@ class FakeNodeViewModel extends NodeViewModel {
 const aReading = Reading(x: 0.1, y: 9.776, z: 0.812);
 ```
 
-Then write the emptiest screen. Create `zenoh_sensors/apps/sensor_node/lib/ui/node/node_screen.dart`:
+Then write a screen that compiles and shows nothing. Create
+`zenoh_sensors/apps/sensor_node/lib/ui/node/node_screen.dart`:
 
 ```dart
 import 'package:flutter/material.dart';
@@ -1873,13 +1841,13 @@ theme's headline size so you can read them from across a desk. Chapter 13 adds a
 
 **What the test guarantees:** the screen shows the latest reading's three values to three decimals, and the count.
 
-The screen reads a stand-in's state so far. Step 2 gives the real view model something to hold.
+The screen reads a fake's state so far. Step 2 gives the real view model something to hold.
 
 **2. Write the view model's test.** The view model's data is the readings. It listens to `readingsProvider`, the
 app's one way in to them, and keeps the latest reading and the count. Riverpod rebuilds whatever watches that state,
 the screen from step 1, so the screen never reads a stream itself.
 
-The test's name is its claim: the view model keeps the latest reading and counts them. Create
+The test's name is its claim, that the view model keeps the latest reading and counts them. Create
 `zenoh_sensors/apps/sensor_node/test/ui/node/node_view_model_test.dart`:
 
 ```dart
@@ -1891,7 +1859,7 @@ import 'package:sensor_node/ui/node/node_view_model.dart';
 
 void main() {
   test('the view model keeps the latest reading and counts them', () async {
-    // Stand-in: the readings provider, overridden with two readings, so
+    // A fake: the readings provider, overridden with two readings, so
     // nothing below the view model is built.
     const first = Reading(x: 0, y: 9.776, z: 0.812);
     const second = Reading(x: 0, y: 0, z: 9.81);
@@ -1929,8 +1897,8 @@ import 'package:sensor_core/sensor_core.dart';
 final readingsProvider = StreamProvider<Reading>((ref) => const Stream.empty());
 ```
 
-The provider graph gives the test its seam. The test fakes nothing below the view model. It *overrides the readings
-provider* with a stream of two readings, so nothing below is ever built.
+The provider graph gives the test its seam. The test *overrides the readings provider*, the one provider below the
+view model, with a stream of two readings, so nothing below it is ever built.
 
 `ProviderContainer.test` makes a container that disposes itself when the test ends. The cascade, `..listen`, keeps the
 view model alive, as a widget watching it would, and it is how the lint rules want a second call on a value just made.
@@ -2010,7 +1978,7 @@ up below.
 **What the test guarantees:** the view model counts every reading the node publishes, and keeps the latest.
 
 **3. Wire the readings to the core.** `readingsProvider` yields nothing yet. Follow the data back to where it starts.
-The readings come from the core, in three links:
+The readings pass through three links:
 
 - `DeviceSensorService` reads the sensor.
 - `SensorNodeRepository` publishes each reading on `sensor/phone/accel` and hands it on.
@@ -2062,15 +2030,15 @@ final readingsProvider = StreamProvider<Reading>((ref) async* {
 });
 ```
 
-As in chapter 1, each provider holds one piece of the app and names the providers it needs. Each piece is made once
-and shared, the container disposes them together, and a test can swap any one for a stand-in with an override.
+Each provider holds one piece of the app and names the providers it needs. Each piece is made once and shared, the
+container disposes them together, and a test can swap any one for a fake with an override.
 
 The six form one chain, from the settings to the readings. The view model from step 2 sits at its end, and the screen
 from step 1 watches the view model.
 
-The first two are chapter 1's, with one change. This program is a **sensor node**, so it takes the settings that
-listen. The service is disposed through its provider, as before. `sensorServiceProvider` is declared against the
-interface, so a test, or chapter 4, can put another implementation there. The repository gets the two services and
+The first two are the providers `sensorctl` has, with one change. This program is a **sensor node**, so it takes the
+settings that listen. The service is disposed through its provider. `sensorServiceProvider` is declared against the
+interface, so a test can put another implementation there. The repository gets the two services and
 the node's name.
 
 `sessionProvider` is a new kind, a `FutureProvider`. It opens the session once, and anything that depends on it can
@@ -2079,14 +2047,14 @@ and then yields the repository's stream.
 
 A provider that watches another is rebuilt when the other changes. So when chapter 12 reconnects the session, the
 readings stream restarts with it, and nothing above needs to know. When the provider is disposed, it cancels the
-stream's listener, and section 7's cycle 4 closes the publication.
+stream's listener, and the repository closes the publication.
 
 A provider makes nothing until something reads it. Listening to the view model starts the whole chain: the session
 opens, the publication is declared on `sensor/phone/accel`, the sensor is asked for readings, and the first reading is
 put. On the device the screen does that listening, so the phone starts publishing when the screen is first built.
 
-**4. Add logging for an app.** Chapter 1 started zenoh's log with `initZenohLogging`, which prints to the process's
-standard output, the terminal for `sensorctl`. An Android app has no terminal, and Android throws its standard output
+**4. Add logging for an app.** `initZenohLogging` prints zenoh's log to the process's standard output, the terminal
+for `sensorctl`. An Android app has no terminal, and Android throws its standard output
 away, so on a device that call shows nothing.
 
 The package has a second way, a *sink*. It delivers the log's records as a stream, for the program to print as it
@@ -2136,16 +2104,16 @@ class ZenohService {
   final _publications = <Publication>[];
 
   /// Opens the session with the settings. When this returns, each connection
-  /// they ask for is made, or its first attempt has failed and zenoh keeps
-  /// retrying it.
+  /// they ask for is made, or the wait set by `scouting/delay` has run out,
+  /// and zenoh keeps retrying the connections not made yet.
   Future<void> open() async {
     _session = await Session.open(config: _config());
   }
 
-  /// The session's identity: up to thirty-two hexadecimal characters.
+  /// The session's id: up to thirty-two hexadecimal characters.
   String get zid => _opened.zid.toHexString();
 
-  /// The identities of the peers this session is connected to.
+  /// The ids of the peers this session is connected to.
   List<String> get peerIds =>
       _opened.peersZid().map((id) => id.toHexString()).toList();
 
@@ -2185,7 +2153,7 @@ class ZenohService {
 
 A program calls one of the two, once, before anything opens, because the logging slot is process-wide and the first
 call claims it. Call `zenohLog` after `initZenohLogging` and it throws a `StateError`. Call them the other way round,
-and the second call is silently ignored. The level is one of `trace`, `debug`, `info`, `warn` and `error`, as before.
+and the second call is silently ignored. The level is one of `trace`, `debug`, `info`, `warn` and `error`.
 
 **5. Write `main`, and switch on the app's rules.** The template's last file goes now, and the app's lint set comes
 with it. `very_good_analysis` replaces the template's `flutter_lints`. Replace
@@ -2264,7 +2232,7 @@ listens on the device's loopback.
 
 **`ProviderScope`** is the container as a widget. Its `retry` turns off Riverpod's default of retrying a failed
 provider, with growing delays, up to 10 times. `sessionProvider` can fail, and a session that cannot open should say
-so once, without trying again in the background for a minute. Chapter 12 makes reconnecting an explicit action.
+so once, without trying again in the background for about 38 seconds. Chapter 12 makes reconnecting an explicit action.
 
 **6. Run every test of the app**, from the top:
 
@@ -2273,9 +2241,9 @@ so once, without trying again in the background for a minute. Chapter 12 makes r
 fvm flutter test apps/sensor_node
 ```
 
-3 tests pass. Nothing in them opens a session or reads a sensor. The app's tests cover the app's own logic, for the
-whole guide. `fvm dart analyze` from the top folder reports no issues for the three packages together, as it does at
-the end of every section from here.
+3 tests pass. Nothing in them opens a session or reads a sensor. The app's tests cover the app's own logic. From the top
+folder, `fvm dart analyze` reports no issues for the three packages together, as it does at the end of every section
+from here.
 
 > **In VS Code.** The Testing view lists the app's tests under `sensor_node`, beside the core's. The same template
 > entry in `launch.json` runs both kinds, from the top folder.
@@ -2300,7 +2268,8 @@ adb version
 It prints its version. If the shell reports `command not found`, add that `platform-tools` folder to your `PATH`, and
 open a new terminal.
 
-`adb` must see only one device, so unplug your phone if it is connected. List your virtual devices:
+With two devices attached, every `adb` command must say which one it means, so unplug your phone if it is connected.
+List your virtual devices:
 
 ```sh
 # in zenoh_sensors
@@ -2322,7 +2291,7 @@ folder:
 cd apps/sensor_node
 ```
 
-Run the app. The build takes a few seconds, because Gradle reuses what it built in section 4.
+Run the app. The build is faster than the first one in section 4.
 
 ```sh
 # in zenoh_sensors/apps/sensor_node
@@ -2360,21 +2329,21 @@ adb forward tcp:7447 tcp:7447
 
 - **The first `tcp:7447` is the laptop side.** `adb` now listens on port 7447 of your laptop's loopback.
 - **The second `tcp:7447` is the device side.** Each connection that arrives on the laptop's port is carried over
-  `adb`'s link, the USB cable for a phone, and connected to port 7447 on the device's loopback, where the app listens.
+  `adb`'s link, the USB cable for a phone. At the other end it connects to port 7447 on the device's loopback, where
+  the app listens.
 - **Nothing flows yet.** The bridge waits for a program to connect to it. Next, `z_sub` connects to
   `127.0.0.1:7447`, which from the laptop looks like a local program. The app sees a connection arriving on its own
   loopback. Neither side knows `adb` is in between.
-- **It is plain TCP.** `adb` does not know about zenoh, and several laptop programs can connect through the same
-  forward at once.
-- **It lasts** until the emulator stops, or until you run `adb forward --remove-all`.
+- **It is plain TCP.** `adb` does not know about zenoh.
+- **It lasts** until you remove it, or until the device goes away.
 
 `flutter run` uses the same mechanism for itself. `adb forward --list` shows two rules on the emulator: yours,
 `tcp:7447 tcp:7447`, and one Flutter made between two random ports so its terminal can talk to the running app.
 
 **Zenoh sees two peers joined by one TCP link.** Neither peer scouts by multicast. The sensor node listens on the
 endpoint `tcp/127.0.0.1:7447`, `nodeEndpoint` in its `listen/endpoints`. The collector, `z_sub` here, connects to the
-same endpoint and listens on none. The link is a direct peer-to-peer connection with no router, as the book's
-[Peer Mode](https://corsaro.me/zenoh/book/routing/peer-mode/) page describes.
+same endpoint and listens on none. The link is a direct peer-to-peer connection with no router, as zenoh.io's
+[*Deployment*](https://zenoh.io/docs/getting-started/deployment/) [1] describes under *Peer to peer*.
 
 In a second terminal at the top folder, start `z_sub` with its own listener off and the key expression that covers
 every node:
@@ -2400,7 +2369,7 @@ emulator gives it when it starts, so `y` carries most of gravity. Your virtual d
 because they are the emulator's defaults.
 
 The plugin asked for its default, 5 readings a second. The device delivers about 15, because the system's own
-programs asked the same sensor for more, as section 8 described.
+programs asked the same sensor for more.
 
 **3. Move the device.** The emulator's console takes sensor values, and `adb` forwards a command to it. In a third
 terminal, lay the device flat on its back:
@@ -2438,72 +2407,72 @@ back where it started:
 adb emu sensor set acceleration 0:9.77631:0.812349
 ```
 
-The numbers on the emulator's screen followed every change too, and its count kept climbing.
+Watch the numbers on the emulator's screen as you set each value.
 
-**4. Update the editor.** Change two entries in `launch.json`: `z_sub` now connects, because the node listens from
-here on, and the app gets its own entry. Replace `zenoh_sensors/.vscode/launch.json`:
-
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "z_sub",
-      "type": "dart",
-      "request": "launch",
-      "program": "${workspaceFolder}/apps/sensorctl/example/z_sub.dart",
-      "cwd": "${workspaceFolder}",
-      "args": [
-        "-e", "tcp/127.0.0.1:7447", "--no-multicast-scouting", "--cfg", "listen/endpoints:[]",
-        "-k", "sensor/**"
-      ]
-    },
-    {
-      "name": "z_put",
-      "type": "dart",
-      "request": "launch",
-      "program": "${workspaceFolder}/apps/sensorctl/example/z_put.dart",
-      "cwd": "${workspaceFolder}",
-      "args": [
-        "-e", "tcp/127.0.0.1:7447", "--no-multicast-scouting", "--cfg", "listen/endpoints:[]",
-        "-k", "demo/example/test", "-p", "Hello from the guide"
-      ]
-    },
-    {
-      "name": "sensorctl",
-      "type": "dart",
-      "request": "launch",
-      "program": "${workspaceFolder}/apps/sensorctl/bin/sensorctl.dart",
-      "cwd": "${workspaceFolder}"
-    },
-    {
-      "name": "sensor_node",
-      "type": "dart",
-      "request": "launch",
-      "program": "${workspaceFolder}/apps/sensor_node/lib/main.dart",
-      "cwd": "${workspaceFolder}/apps/sensor_node"
-    },
-    {
-      "name": "tests",
-      "type": "dart",
-      "request": "launch",
-      "templateFor": "",
-      "cwd": "${workspaceFolder}"
-    }
-  ]
-}
-```
-
-The app's entry starts in the app's folder, for the reason section 4 gave. Its `type` is `dart` for a Flutter app
-too, and the extension tells the two apart by the project. The `tests` template is unchanged, and it runs the app's
-tests as well as the core's, from the top.
-
-> **In VS Code.** Pick the emulator in the status bar, choose **sensor_node** in Run and Debug, and press ▶. It is
+> **In VS Code.** Change one entry in `launch.json` and add one. `z_sub` now connects, because the node listens
+> from here on, and the app gets its own entry. Replace `zenoh_sensors/.vscode/launch.json`:
+>
+> ```json
+> {
+>   "version": "0.2.0",
+>   "configurations": [
+>     {
+>       "name": "z_sub",
+>       "type": "dart",
+>       "request": "launch",
+>       "program": "${workspaceFolder}/apps/sensorctl/example/z_sub.dart",
+>       "cwd": "${workspaceFolder}",
+>       "args": [
+>         "-e", "tcp/127.0.0.1:7447", "--no-multicast-scouting", "--cfg", "listen/endpoints:[]",
+>         "-k", "sensor/**"
+>       ]
+>     },
+>     {
+>       "name": "z_put",
+>       "type": "dart",
+>       "request": "launch",
+>       "program": "${workspaceFolder}/apps/sensorctl/example/z_put.dart",
+>       "cwd": "${workspaceFolder}",
+>       "args": [
+>         "-e", "tcp/127.0.0.1:7447", "--no-multicast-scouting", "--cfg", "listen/endpoints:[]",
+>         "-k", "demo/example/test", "-p", "Hello from the guide"
+>       ]
+>     },
+>     {
+>       "name": "sensorctl",
+>       "type": "dart",
+>       "request": "launch",
+>       "program": "${workspaceFolder}/apps/sensorctl/bin/sensorctl.dart",
+>       "cwd": "${workspaceFolder}"
+>     },
+>     {
+>       "name": "sensor_node",
+>       "type": "dart",
+>       "request": "launch",
+>       "program": "${workspaceFolder}/apps/sensor_node/lib/main.dart",
+>       "cwd": "${workspaceFolder}/apps/sensor_node"
+>     },
+>     {
+>       "name": "tests",
+>       "type": "dart",
+>       "request": "launch",
+>       "templateFor": "",
+>       "cwd": "${workspaceFolder}"
+>     }
+>   ]
+> }
+> ```
+>
+> The app's entry starts in the app's folder, as `flutter run` does. Its `type` is `dart` for a Flutter app too, and
+> the extension tells the two apart by the project. The `tests` template is unchanged, and it runs the app's tests
+> as well as the core's, from the top.
+>
+> Pick the emulator in the status bar, choose **sensor_node** in Run and Debug, and press ▶. It is
 > the same as `flutter run`, with the Debug Console for its output and hot reload on the toolbar. Then run **z_sub**
 > from the same list, after `adb forward` in a terminal. `sensorctl` still works too. It connects to the node now,
 > says who it is, and reports one peer, the node.
 
-**5. Stop.** Press Ctrl-C in the second terminal to stop `z_sub`, the collector. It prints zenoh 1.8.0's `ERROR` line,
+**4. Stop.** Press Ctrl-C in the second terminal to stop `z_sub`, the collector. It prints zenoh 1.8.0's `ERROR` line,
 because it was connected to the node when it closed. Press `q` in the first terminal to stop the app, which stays
 installed on the device.
 
@@ -2511,7 +2480,7 @@ In the third terminal, remove the forward:
 
 ```sh
 # in zenoh_sensors
-adb forward --remove-all
+adb forward --remove tcp:7447
 ```
 
 Then close the emulator's window. Go back to the top folder in the first terminal:
@@ -2525,8 +2494,8 @@ The node publishes from the emulator, and the laptop receives it. Section 11 run
 
 ## 11 — On your phone
 
-Run the same commands on a phone over its USB cable. **`adb` must see only one device**, or every command needs `-s`
-and the device's serial. If the emulator is running, close its window.
+Run the same commands on a phone over its USB cable. With the emulator running too, every `adb` command would have to
+say which device it means, so close the emulator's window first.
 
 **1. Plug in, and run.** Turn on USB debugging and unlock the phone. `fvm flutter devices` lists it, perhaps beside
 the laptop itself and a browser, which this app cannot run on because it is made for Android only. Go into the app's
@@ -2544,10 +2513,10 @@ Run the app:
 fvm flutter run
 ```
 
-The first build for a phone compiles for a different processor than the emulator's, so it takes a while again. The
-app appears on the phone with your own numbers in it, about 9.8 on the axis pointing at the sky, and a count. The
-terminal is busier than it was for the emulator. A phone sends Android's own log lines from the app's process,
-starting `I/` and `D/`, and none of them is zenoh's.
+The first build for a phone takes longer than the emulator's last one. The app appears on the phone with your own
+numbers in it, about 9.8 on the axis pointing at the sky, and a count. The terminal is busier than it was for the
+emulator. A phone sends Android's own log lines from the app's process, starting `I/` and `D/`, and none of them is
+zenoh's.
 
 **2. Forward the port, and subscribe.** In the second terminal, at the top folder:
 
@@ -2575,9 +2544,8 @@ Press CTRL-C to quit...
 Tilt the phone and watch the laptop follow. The number of lines a second depends on the phone and on what else on it
 reads the sensor.
 
-The app asks for 5 a second, and Android delivers at the fastest rate any program asked for. The phone this chapter
-was checked with delivered about 120 a second while its screen was on, because another program was reading the sensor
-100 times a second. With the screen off, it delivered about 7.
+The app asks for 5 a second. The phone this chapter was checked with delivered about 120 a second while its screen was
+on, while another program held the sensor at a 10 ms period. With the screen off, it delivered about 7.
 
 **3. Lock it.** Press the power button, wait a few seconds, and watch the second terminal. The lines keep coming. On
 the phone this chapter was checked with, they slowed from 120 a second to 7, and were back at 120 within a second of
@@ -2595,7 +2563,7 @@ because it was connected to the node when it closed. In the same terminal, remov
 
 ```sh
 # in zenoh_sensors
-adb forward --remove-all
+adb forward --remove tcp:7447
 ```
 
 Go back to the first terminal, and press `q` to exit the app running on the phone. The app stays installed on the
@@ -2615,9 +2583,8 @@ The claim holds on your phone. Section 12 adds three more tests and looks at wha
 
 Pin three facts with tests, and look at what the chapter built.
 
-**1. Add three more tests.** They pass at once, because they pin what the code already does, as chapter 1's last three
-did. One is about zenoh, and two are rules of your own. Add them to
-`zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test.dart`:
+**1. Add three more tests.** They pass at once, because they pin what the code already does. One is about zenoh, and two
+are rules of your own. Add them to `zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test.dart`:
 
 ```dart
 ⋮
@@ -2692,8 +2659,8 @@ fvm dart test packages/sensor_core
 17 tests pass.
 
 **Pub/sub keeps nothing.** A subscriber that arrives after a put never sees it. It sees only what is put after its
-declaration has reached the publisher's side, so the test waits once after subscribing, for the declaration to travel,
-and once after the put.
+declaration has reached the publisher's side. So the test waits twice, once after subscribing, for the declaration to
+travel, and once after the put.
 
 A node that publishes to nobody sends its readings nowhere, and a collector that connects a minute later starts from
 the next one. Zenoh calls this data in motion. Chapter 7 gives the node a memory, and chapter 8 a way to ask for
@@ -2706,8 +2673,8 @@ publication twice is safe, and the repository's cancel and the service's dispose
 **What the tests guarantee:** a late subscriber sees only the puts after its declaration, a put after `dispose()` is
 an error, and a second `close()` is safe.
 
-**2. Look at what changed in the architecture.** Chapter 1 filled the layer on the right. This chapter drew the whole
-stack of the app and filled each layer with the least that makes the claim true:
+**2. Look at what changed in the architecture.** This chapter builds the whole stack of the app, each layer with the
+least that makes the claim true:
 
 ```
 NodeScreen  →  NodeViewModel  →  SensorNodeRepository  →  ZenohService + Publication  →  zenoh_dart
@@ -2716,10 +2683,10 @@ NodeScreen  →  NodeViewModel  →  SensorNodeRepository  →  ZenohService + P
                                                          (DeviceSensorService, in the app)
 ```
 
-Four rules began here, and they hold for the rest of the guide.
+Four rules start here.
 
-**The repository owns the key expression.** `sensor/<node>/accel` is built in one place, from a name given once, and
-nothing above or below the repository knows the shape of a key. The codec that will own the *payload* comes in
+**The repository owns the key expression.** `sensor/<node>/accel` is built in one place, from a name given once. In this
+chapter nothing above or below the repository knows the shape of a key. The codec that will own the *payload* comes in
 chapter 6. Until then the three lines that make `x,y,z` sit in the repository.
 
 **The service hands out its own types.** `Publication` is declared beside the service and wraps the package's
@@ -2728,16 +2695,16 @@ the same way.
 
 **The app's tests never touch zenoh or a device.** The plugin's function is replaced by one that plays an event the
 test made. The readings provider is overridden with a stream. The view model is replaced by one that holds a fixed
-state. Every claim about zenoh is
-tested in the core, on the laptop, against real sessions. The claim about the device is checked by running it.
+state. In this chapter every claim about zenoh is tested in the core, on the laptop, against real sessions. The
+claim about the device is checked by running it.
 
-**Live data is a stream provider that depends on the connection.** `readingsProvider` waits for `sessionProvider` and
-then yields the repository's stream, and a view model listens to it and keeps state. When the connection is rebuilt,
+**Live data is a stream provider that depends on the session.** `readingsProvider` waits for `sessionProvider` and
+then yields the repository's stream, and a view model listens to it and keeps state. When the session is rebuilt,
 the stream is rebuilt with it, and cancelling the stream closes what the node declared.
 
 **What comes next.** Chapter 3 builds `sensorctl watch`, the collector's stack: a subscription in the service, a
 repository that receives readings, a view model, and the terminal as the view. Each layer is tested against a fake of
-the one below, as this chapter's app was, and `watch` replaces `z_sub`.
+the one below, and `watch` replaces `z_sub`.
 
 Chapter 4 adds `simulate`, a second sensor node inside `sensorctl`, written to the contract `SensorService` set here,
 for when you would rather not start a device. Chapter 5 takes the phone off the cable and onto your Wi-Fi.
@@ -2754,11 +2721,12 @@ git add .
 git commit -m "The node on your phone: sensor_node, and readings on sensor/phone/accel"
 ```
 
-The commit holds 47 files, 41 of them new:
+The commit holds 46 files, 41 of them new, and 47 with `.vscode/launch.json`:
 
 - 33 are the app's: 19 under `android/`, the 5 at its top, and the 9 Dart files you wrote.
-- 9 are the core's: 6 new and 3 changed.
-- The other 5 are `z_pub.dart`, `dart_test.yaml`, the changed `launch.json`, and the 2 files at the top.
+- 9 are the core's, 6 new and 3 changed.
+- The other 4 are `z_pub.dart`, `dart_test.yaml`, and the 2 files at the top, and the changed `launch.json` if you use
+  VS Code.
 
 Git leaves out these, which the app's `.gitignore` and `android/.gitignore` list:
 
@@ -2781,7 +2749,7 @@ zenoh_sensors/
 ├── .fvmrc
 ├── .git/
 ├── .gitignore
-├── .vscode/
+├── .vscode/                        if you use VS Code
 │   ├── launch.json
 │   └── settings.json
 ├── apps/
@@ -2869,28 +2837,14 @@ zenoh_sensors/
 └── pubspec.yaml
 ```
 
-This chapter was checked with these versions. Newer ones should work. If something does not, go back to these.
+Four tools and two packages are new in this chapter, and one package resolved to a different version:
 
 | what | version |
 |---|---|
-| Linux | Ubuntu 26.04.1 on x86_64, glibc 2.43 |
-| git | 2.53.0 |
-| fvm | 4.3.1 |
-| Flutter, and the Dart it carries | 3.47.2, Dart 3.13.2; sections 10–13 also by hand on 3.47.5, Dart 3.13.4 |
-| VS Code | 1.138.0 |
-| Dart and Flutter extensions | 3.142.0 |
 | Android platform tools, `adb` | 1.0.41 (37.0.1) |
 | Android emulator, and the virtual device | 37.1.11; API 37, x86_64 |
 | Java, which Gradle runs on | 25.0.3, the one Android Studio carries |
 | the phone | Pixel 9a, Android 17 |
-| `zenoh_dart`, built on zenoh 1.8.0 | 1.0.0-rc.1 |
-| `riverpod`, `flutter_riverpod` | 3.4.3 |
+| `flutter_riverpod` | 3.4.3 |
 | `sensors_plus` | 7.1.0 |
-| `args` | 2.7.0 |
-| `very_good_analysis` | 11.0.0 |
-| `test` | 1.31.1 |
-
----
-
-*The code listings in this chapter are licensed under the Apache License 2.0. The text is © 2026 Hugo Alberto Garcia,
-all rights reserved — see [COPYRIGHT](../COPYRIGHT).*
+| `test`, now the version the Flutter SDK pins | 1.31.1 |
