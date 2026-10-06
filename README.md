@@ -29,11 +29,12 @@ tools create each project's starting files, and some of the package's example pr
 | 0 | **[Getting started](chapters/00-getting-started.md)** | the toolchain, a git repository holding a Dart project that depends on `zenoh_dart`, and two of the package's example programs talking to each other in two terminals |
 | 1 | **[A session of your own](chapters/01-a-session-of-your-own.md)** | a session opened with a configuration you wrote, behind `ZenohService`, in a core package that a pub workspace shares with the phone app to come; your first tests, red then green; the program wired by a provider container |
 | 2 | **[The node on your phone](chapters/02-the-node-on-your-phone.md)** | the Flutter app `sensor_node`, in the same workspace, publishing the phone's accelerometer on `sensor/phone/accel` through the core; the chapter's claim tested against real zenoh, and the app built from its screen in; the node run on the emulator and then on a phone over its USB cable, with the package's `z_sub` receiving on the laptop |
+| 3 | **[The collector on your laptop](chapters/03-the-collector-on-your-laptop.md)** | `sensorctl`'s first command, `watch`: a subscription behind `ZenohService` and a repository that turns each payload back into a reading, then a view that redraws one line in place, a view model and the providers; the chapter's claim tested against real zenoh, and the program built from its terminal in; `watch` run against the node on the emulator |
 
-The rest are being written. Chapter 3 gives the laptop the program that watches the phone, and chapter 4 a sensor
-node that needs no device. Chapter 5 takes the phone onto your Wi-Fi network, with a router for a network where the
-laptop cannot reach the phone. The chapters after it add one thing each: serialization, queryables, queries,
-commands, liveliness, quality of service, stopping properly, a second view, and scouting and security.
+The rest are being written. Chapter 4 gives `sensorctl` a sensor node that needs no device. Chapter 5 takes the phone
+onto your Wi-Fi network, with a router for a network where the laptop cannot reach the phone. The chapters after it
+add one thing each: serialization, queryables, queries, commands, liveliness, quality of service, stopping properly, a
+second view, and scouting and security.
 
 The chapters take zenoh's ideas in the order the two programs need them. For what each idea is, the reference is
 zenoh.io's documentation [1], and each chapter's reading list gives its page first, then the books' [2], [3].
@@ -73,9 +74,9 @@ Each chapter's reading list tags a source with its number here.
 - [4] bluecorn, *zenoh_dart*, version 1.0.0-rc.1, the Dart binding for zenoh, built on zenoh-c 1.8.0, 2026. [Online].
   Available: <https://pub.dev/packages/zenoh_dart>
 
-  Most chapters start from one of the programs in its `example/` folder. You run it first, see the behavior, and then
-  build that idea into the application. Every statement about the Dart API is checked against the package's source at
-  its version.
+  Most chapters start from one of the programs in its `example/` folder. You run it first and see the behavior, or read
+  its code when the chapter before has just run it, and then build that idea into the application. Every statement
+  about the Dart API is checked against the package's source at its version.
 - [5] Google, "Guide to app architecture," *Flutter documentation*, May 5, 2026. Accessed: Oct. 1, 2026. [Online].
   Available: <https://docs.flutter.dev/app-architecture/guide>
 
