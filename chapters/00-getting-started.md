@@ -450,7 +450,7 @@ because `zenoh_dart` depends on it. The template's lints ask a program to name e
 fvm dart pub add args
 ```
 
-**3. Start the subscriber.**
+**3. Start the subscriber, and leave it running.**
 
 ```sh
 # in zenoh_sensors/apps/sensorctl

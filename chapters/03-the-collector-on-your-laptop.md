@@ -1763,9 +1763,7 @@ reports no issues.
 ## 9 — On the emulator
 
 Run the node on the emulator, and watch its readings with `sensorctl`. You need three terminals: the node in the
-first, the forward and `watch` in the second, and the device's moves in the third. In the diagram, each row is one
-action, in order, in the column where you take it, and the emulator's column also shows what the emulator does. `┃`
-marks a terminal that a running program holds, and `◉` marks where you read the result.
+first, the forward and `watch` in the second, and the device's moves in the third.
 
 ```
    first terminal        second terminal        third terminal         emulator

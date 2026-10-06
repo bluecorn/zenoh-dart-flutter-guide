@@ -21,6 +21,19 @@ Both ids differ on your machine. The first is `sensorctl`'s own. The second is `
 it.** You give `sensorctl` the address to connect to, and `z_sub` the address to listen on. Until chapter 14, every
 program you write has multicast scouting off, and you tell it where to listen or where to connect.
 
+You run `sensorctl` as `fvm dart run sensorctl:sensorctl`. In the code, `sensorctl` is `main`, at the top of this
+stack, and each layer has its section:
+
+```
+sensorctl                    what you type
+  main                       section 8: prints the id and the peers, and disposes the container
+    ProviderContainer        section 8: builds the service from its settings
+      ZenohService           sections 5 to 7: opens the session, and gives its id and its peers
+      SessionSettings        sections 5 and 7: where each side listens or connects
+```
+
+Section 3 first writes the program flat, in one file, and section 4 makes the workspace that holds the core.
+
 > **If you already know zenoh.** `sensorctl` is `z_info` with its configuration in code, in a class that tests check,
 > and its zenoh calls behind one class. Until chapter 5, each of your programs is a peer with multicast scouting and
 > gossip off. The sensor node listens on the loopback, and the collectors connect to it. The zenoh calls go behind one
@@ -617,6 +630,17 @@ The test's name says the same in fewer words.
 ```sh
 # in zenoh_sensors
 mkdir -p packages/sensor_core/lib/src/services packages/sensor_core/test/services
+```
+
+`sensor_core` now looks like this:
+
+```
+zenoh_sensors/packages/sensor_core/
+├── lib/
+│   └── src/
+│       └── services/
+└── test/
+    └── services/
 ```
 
 `test/` mirrors `lib/src/`. The tests of `lib/src/services/zenoh_service.dart` go in

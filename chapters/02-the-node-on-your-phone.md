@@ -22,12 +22,20 @@ Your own code publishes, and the laptop receives it. Chapter 3 replaces `z_sub` 
 You build it in two passes, each led by a test. First the data side: fakes prove the core until the chapter's claim
 holds, and then the phone's own sensor is connected to it. Then the app, from the screen in, each layer added when the
 one above needs it. By the end of the chapter every layer of the pattern but the codec is there, each with the least
-that makes the claim true:
+that makes the claim true.
 
-- the services: one for the sensor, and the shared `ZenohService` with one new thing in it
-- the repository, which owns the key expression
-- the view model
-- the view, one widget
+You run the app as `fvm flutter run`, in `apps/sensor_node`, and it runs until you press `q`. In the code, the app
+starts in `main`, at the top of this stack, and each layer has its section:
+
+```
+fvm flutter run                       what you type, in apps/sensor_node
+  main                                section 9: starts the app, with zenoh's log in flutter run's output
+    NodeScreen                        section 9: the view, one widget
+    NodeViewModel                     section 9: keeps the latest reading and the count
+      SensorNodeRepository            sections 5 and 7: owns the key expression, and publishes each reading
+        ZenohService + Publication    section 6: puts each reading's text through a declared publisher
+        DeviceSensorService           section 8: reads the accelerometer, as SensorService says
+```
 
 The test that states the claim lives in `sensor_core`. It runs on the laptop against real zenoh, with the sensor
 faked. The app's own tests use fakes and never touch zenoh. You check the claim about a phone and a laptop by running
@@ -95,7 +103,7 @@ Press CTRL-C to quit...
 
 **3. Start the publisher.** In a second terminal, also at the top folder, start `z_pub` with three options: connect to
 the subscriber, no multicast scouting, and no listener of its own. Give it no key and no value, so that its defaults
-show:
+show, and leave it running:
 
 ```sh
 # in zenoh_sensors
@@ -407,6 +415,21 @@ editor's template starts them.
 # in zenoh_sensors
 mkdir -p packages/sensor_core/lib/src/domain packages/sensor_core/lib/src/repositories
 mkdir -p packages/sensor_core/test/repositories packages/sensor_core/test/support
+```
+
+`sensor_core` now looks like this:
+
+```
+zenoh_sensors/packages/sensor_core/
+├── lib/
+│   └── src/
+│       ├── domain/
+│       ├── repositories/
+│       └── services/
+└── test/
+    ├── repositories/
+    ├── services/
+    └── support/
 ```
 
 `domain/` holds the model, `repositories/` the layer that owns key expressions, and `support/` what the tests share,
@@ -1471,6 +1494,19 @@ fvm dart pub get
 mkdir -p apps/sensor_node/lib/data/services apps/sensor_node/test/data/services
 ```
 
+`sensor_node` now looks like this:
+
+```
+zenoh_sensors/apps/sensor_node/
+├── android/
+├── lib/
+│   └── data/
+│       └── services/
+└── test/
+    └── data/
+        └── services/
+```
+
 **3. Write the test.** The plugin's stream needs the plugin's platform side, which a test does not have. So the service
 takes the function that produces the stream as a constructor argument. By default it is the plugin's own function, and a
 test passes in one that plays events the test made. Create
@@ -1654,6 +1690,25 @@ mkdir -p apps/sensor_node/lib/config apps/sensor_node/lib/ui/node
 mkdir -p apps/sensor_node/test/ui/node apps/sensor_node/test/support
 ```
 
+`sensor_node` now looks like this:
+
+```
+zenoh_sensors/apps/sensor_node/
+├── android/
+├── lib/
+│   ├── config/
+│   ├── data/
+│   │   └── services/
+│   └── ui/
+│       └── node/
+└── test/
+    ├── data/
+    │   └── services/
+    ├── support/
+    └── ui/
+        └── node/
+```
+
 **1. Write the screen's test.** Start from what the user sees. The least that shows the node at work is the latest
 reading, to three decimals, and how many readings there have been. The test's name is its claim, that the screen
 shows the latest reading and the count. Create `zenoh_sensors/apps/sensor_node/test/ui/node/node_screen_test.dart`:
@@ -1720,7 +1775,8 @@ class NodeState {
   final int count;
 }
 
-/// Keeps the latest reading and counts them, for the node's screen.
+/// The view model behind the node's screen, which keeps the latest reading and
+/// counts the readings.
 class NodeViewModel extends Notifier<NodeState> {
   @override
   NodeState build() => const NodeState();
@@ -1945,7 +2001,8 @@ class NodeState {
   final int count;
 }
 
-/// Keeps the latest reading and counts them, for the node's screen.
+/// The view model behind the node's screen, which keeps the latest reading and
+/// counts the readings.
 class NodeViewModel extends Notifier<NodeState> {
   @override
   NodeState build() {
@@ -2002,7 +2059,7 @@ final sessionSettingsProvider = Provider<SessionSettings>(
   (ref) => SessionSettings.sensorNode(),
 );
 
-/// The app's one zenoh session, disposed with the container.
+/// The app's one zenoh service, disposed with the container.
 final zenohServiceProvider = Provider<ZenohService>((ref) {
   final service = ZenohService(ref.watch(sessionSettingsProvider));
   ref.onDispose(service.dispose);
@@ -2258,11 +2315,38 @@ The app is complete, and its tests pass. Section 10 runs it on the emulator.
 ## 10 — On the emulator
 
 Run the node on the virtual device, and watch its readings arrive on the laptop. Then move the device from the
-command line, and watch them change. You need three terminals: the app in the first, the subscriber in the second,
-and the emulator's console in the third.
+command line, and watch them change. You need three terminals: the app in the first, the forward and the subscriber in
+the second, and the emulator's console in the third.
 
-**1. Start the emulator and the node.** Check that `adb` is on your `PATH`, because every `adb` command in this
-guide calls it by name. It is in the `platform-tools` folder of the Android SDK, as
+In the diagram, each row is one action, in order, in the column where you take it, and the emulator's column also
+shows what the emulator does. `┃` marks a terminal that a running program holds, and `◉` marks where you read the
+result.
+
+```
+   first terminal        second terminal        third terminal         emulator
+   ────────────────────  ─────────────────────  ─────────────────────  ──────────────────
+1  adb version
+   flutter emulators
+   start the emulator                                                  boots
+   cd apps/sensor_node
+   flutter run                                                         runs the app
+2  ┃                     adb forward
+   ┃                     z_sub
+   ┃                     ◉ the resting pose
+3  ┃                     ┃                      adb emu: lay it flat   lies flat
+   ┃                     ◉ z reads 9.810
+   ┃                     ┃                      adb emu: stand it up   stands, facing you
+   ┃                     ◉ y reads 9.810
+   ┃                     ┃                      adb emu: put it back   stands as before
+4  ┃                     Ctrl-C
+   ┃                     adb forward --remove
+   q                                                                   the app stops
+   cd ../..
+5                                                                      you click its ×
+```
+
+**1. Start the emulator and the node.** In the first terminal, check that `adb` is on your `PATH`, because every
+`adb` command in this guide calls it by name. It is in the `platform-tools` folder of the Android SDK, as
 [Android's page on `adb`](https://developer.android.com/tools/adb) describes.
 
 ```sh
@@ -2325,7 +2409,7 @@ loopback and your laptop's loopback are two different places. A program on the l
 └────────────────────────────┘              └────────────────────────────┘
 ```
 
-Build the bridge:
+Open a second terminal at the top folder, and build the bridge:
 
 ```sh
 # in zenoh_sensors
@@ -2350,8 +2434,8 @@ endpoint `tcp/127.0.0.1:7447`, `nodeEndpoint` in its `listen/endpoints`. The col
 same endpoint and listens on none. The link is a direct peer-to-peer connection with no router, as zenoh.io's
 [*Deployment*](https://zenoh.io/docs/getting-started/deployment/) [1] describes under *Peer to peer*.
 
-In a second terminal at the top folder, start `z_sub` with its own listener off and the key expression that covers
-every node:
+In the same terminal, start `z_sub` with its own listener off and the key expression that covers every node, and leave
+it running:
 
 ```sh
 # in zenoh_sensors
@@ -2376,8 +2460,8 @@ because they are the emulator's defaults.
 The plugin asked for its default, 5 readings a second. The device delivers about 15, because the system's own
 programs asked the same sensor for more.
 
-**3. Move the device.** The emulator's console takes sensor values, and `adb` forwards a command to it. In a third
-terminal, lay the device flat on its back:
+**3. Move the device.** The emulator's console takes sensor values, and `adb` forwards a command to it. Open a
+third terminal at the top folder, and lay the device flat on its back:
 
 ```sh
 # in zenoh_sensors
@@ -2391,12 +2475,14 @@ In the second terminal, within a second, gravity moves to `z`:
 ⋮
 ```
 
-Then stand it upright, facing you:
+In the third terminal, stand it upright, facing you:
 
 ```sh
 # in zenoh_sensors
 adb emu sensor set acceleration 0:9.81:0
 ```
+
+In the second terminal, gravity moves to `y`:
 
 ```
 >> [Subscriber] Received PUT ('sensor/phone/accel': '0.000,9.810,0.000')
@@ -2404,8 +2490,8 @@ adb emu sensor set acceleration 0:9.81:0
 ```
 
 **A value you set holds until you set another.** The emulator's motion model does not move the device back by
-itself. A stream that seems frozen after this means the device is lying where you put it, and the app is fine. Put it
-back where it started:
+itself. A stream that seems frozen after this means the device is lying where you put it, and the app is fine. In the
+third terminal, put it back where it started:
 
 ```sh
 # in zenoh_sensors
@@ -2477,34 +2563,35 @@ Watch the numbers on the emulator's screen as you set each value.
 > from the same list, after `adb forward` in a terminal. `sensorctl` still works too. It connects to the node now,
 > says who it is, and reports one peer, the node.
 
-**4. Stop.** Press Ctrl-C in the second terminal to stop `z_sub`, the collector. It prints zenoh 1.8.0's `ERROR` line,
-because it was connected to the node when it closed. Press `q` in the first terminal to stop the app, which stays
-installed on the device.
-
-In the third terminal, remove the forward:
+**4. Stop.** In the second terminal, press Ctrl-C to stop `z_sub`, the collector. It prints zenoh 1.8.0's `ERROR`
+line, because it was connected to the node when it closed. In the same terminal, remove the forward:
 
 ```sh
 # in zenoh_sensors
 adb forward --remove tcp:7447
 ```
 
-Then close the emulator's window. Go back to the top folder in the first terminal:
+In the first terminal, press `q` to stop the app, which stays installed on the device, and go back to the top folder:
 
 ```sh
 # in zenoh_sensors/apps/sensor_node
 cd ../..
 ```
 
+The emulator keeps running.
+
+**5. Close the emulator.** Click the × in the panel on the right of the emulator's screen.
+
 The node publishes from the emulator, and the laptop receives it. Section 11 runs the same commands on your phone.
 
 ## 11 — On your phone
 
 Run the same commands on a phone over its USB cable. With the emulator running too, every `adb` command would have to
-say which device it means, so close the emulator's window first.
+say which device it means, so keep the emulator closed.
 
 **1. Plug in, and run.** Turn on USB debugging and unlock the phone. `fvm flutter devices` lists it, perhaps beside
-the laptop itself and a browser, which this app cannot run on because it is made for Android only. Go into the app's
-folder:
+the laptop itself and a browser, which this app cannot run on because it is made for Android only. In the first
+terminal, go into the app's folder:
 
 ```sh
 # in zenoh_sensors
@@ -2523,12 +2610,14 @@ numbers in it, about 9.8 on the axis pointing at the sky, and a count. The termi
 emulator. A phone sends Android's own log lines from the app's process, starting `I/` and `D/`, and none of them is
 zenoh's.
 
-**2. Forward the port, and subscribe.** In the second terminal, at the top folder:
+**2. Forward the port, and subscribe.** Open a second terminal at the top folder, and forward the port:
 
 ```sh
 # in zenoh_sensors
 adb forward tcp:7447 tcp:7447
 ```
+
+In the same terminal, start `z_sub`, and leave it running:
 
 ```sh
 # in zenoh_sensors
