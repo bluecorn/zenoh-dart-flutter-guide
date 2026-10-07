@@ -1073,8 +1073,12 @@ void main() {
 }
 ```
 
-The test needs two things that do not exist yet: the state that the line is made from, and the function that makes
-it. The state belongs to the view model, so it goes in the view model's file. This test needs only a state with no
+The test asks for two things that do not exist yet:
+
+- The state the line is made from, `WatchState`.
+- The function that makes the line, `watchLine`.
+
+The state belongs to the view model, so it goes in the view model's file. This test needs only a state with no
 reading yet. Create `zenoh_sensors/apps/sensorctl/lib/ui/watch/watch_view_model.dart`:
 
 ```dart

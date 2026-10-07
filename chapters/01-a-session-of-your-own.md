@@ -700,8 +700,14 @@ port 7447, because the leftover session holds it. That test fails for a reason t
 holds the other's id. The third is the guard. If both sessions reported the same id, `contains` would pass while the two
 sessions had not connected.
 
-**4. Write just enough for it to compile.** Three files, none of which does anything yet. The settings come first.
-Create `zenoh_sensors/packages/sensor_core/lib/src/services/session_settings.dart`:
+The test asks for three things that do not exist yet:
+
+- `SessionSettings`, with a factory for each role, `sensorNode()` and `collectorNode()`.
+- `ZenohService`, built from the settings, with `open()`, `dispose()`, `zid` and `peerIds`.
+- The package's exports of both, so that the test can import them.
+
+**4. Write just enough for it to compile.** The settings come first. Create
+`zenoh_sensors/packages/sensor_core/lib/src/services/session_settings.dart`:
 
 ```dart
 /// A session's settings, by role: the sensor node's, or a collector's.

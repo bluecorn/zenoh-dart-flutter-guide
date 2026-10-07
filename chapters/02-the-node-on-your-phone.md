@@ -525,8 +525,17 @@ The four expectations state the claim: one sample on the *key* `sensor/phone/acc
 `x,y,z` to three decimals, marked `text/plain`, and the reading handed on for a screen to show. The numbers are the
 emulator's resting pose, which you see on the laptop in section 10.
 
-**6. Write just enough for it to compile.** Five files, and only the repository is a skeleton. A model and a contract
-have no behavior to fake, and the fake sensor is whole from the start, so you write those three once, here.
+The test asks for five things that do not exist yet:
+
+- `Reading`, the model, with `x`, `y` and `z`.
+- `SensorService`, the contract, with `accelerometer()`.
+- `FakeSensorService`, a sensor that delivers what a test hands in.
+- `SensorNodeRepository`, built from the service, a sensor and the node's name, whose `publish()` is the stream of
+  what it published.
+- The core's exports of the three new files, so that the test can import them.
+
+**6. Write just enough for it to compile.** Only the repository is a skeleton. A model and a contract have no
+behavior to fake, and the fake sensor is whole from the start, so you write those three once, here.
 
 The model holds one reading. Create `zenoh_sensors/packages/sensor_core/lib/src/domain/reading.dart`:
 
@@ -1752,8 +1761,13 @@ void main() {
 }
 ```
 
-The test needs three things that do not exist yet: the view model's state and its provider, a fake view model that
-holds a fixed state, and the screen. Write the least of each that compiles.
+The test asks for three things that do not exist yet:
+
+- The view model's state, `NodeState`, and its provider, `nodeViewModelProvider`.
+- A fake view model that holds a fixed state.
+- The screen, `NodeScreen`.
+
+Write the least of each that compiles.
 
 The screen reads its state from a view model. A view model holds the data its screen needs, shaped for that screen.
 The least one holds a state and never changes it. Create
