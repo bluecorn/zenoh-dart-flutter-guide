@@ -1918,6 +1918,9 @@ Add them to `zenoh_sensors/packages/sensor_core/test/services/zenoh_service_test
 }
 ```
 
+`emitsDone` comes with `test` and asserts that a stream ends. Here the subscription's stream ends because `dispose()`
+closed the subscriber under it.
+
 Run the whole core:
 
 ```sh

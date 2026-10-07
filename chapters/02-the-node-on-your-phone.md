@@ -1963,7 +1963,11 @@ view model, with a stream of two readings, so nothing below it is ever built.
 
 `ProviderContainer.test` makes a container that disposes itself when the test ends. The cascade, `..listen`, keeps the
 view model alive, as a widget watching it would, and it is how the lint rules want a second call on a value just made.
-`pumpEventQueue` lets both readings flow through before the test reads the state.
+
+`pumpEventQueue` lets both readings flow through before the test reads the state. A stream delivers each event in a
+later turn of Dart's event loop, so the state still has no reading when `listen` returns. `pumpEventQueue` comes with
+`test` and waits until the event loop has run 20 times, close to waiting for every piece of work that waits on
+nothing outside the process.
 
 Run it:
 
