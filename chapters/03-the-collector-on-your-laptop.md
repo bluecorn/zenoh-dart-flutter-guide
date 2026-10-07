@@ -46,10 +46,10 @@ sensorctl watch                      what you type
 
 You check the claim about a device and a laptop by running `watch` against the node, in section 9.
 
-> **If you already know zenoh.** `watch` is `z_sub` on one key, with its subscriber behind your own service. Sections 3
+> **Zenoh guidance.** `watch` is `z_sub` on one key, with its subscriber behind your own service. Sections 3
 > to 5 hold the zenoh code, and sections 6 to 8 build the program around it.
 
-> **If you already know Flutter.** This chapter has no Flutter. `sensorctl` is plain Dart, with Riverpod and no
+> **Flutter guidance.** This chapter has no Flutter. `sensorctl` is plain Dart, with Riverpod and no
 > widgets, and the app does not change.
 
 ## 2 — What to read

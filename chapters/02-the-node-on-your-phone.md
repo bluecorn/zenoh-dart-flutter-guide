@@ -41,11 +41,11 @@ The test that states the claim lives in `sensor_core`. It runs on the laptop aga
 faked. The app's own tests use fakes and never touch zenoh. You check the claim about a phone and a laptop by running
 it, in sections 10 and 11.
 
-> **If you already know zenoh.** This is `z_pub` with the key `sensor/phone/accel` and a `text/plain` encoding on
+> **Zenoh guidance.** This is `z_pub` with the key `sensor/phone/accel` and a `text/plain` encoding on
 > every put. The session listens on the device's loopback, and the laptop reaches it with `adb forward`, with no
 > router. Section 3 explains why the node declares a publisher and does not call `put` on the session.
 
-> **If you already know Flutter.** The app is `flutter create --empty`, `flutter_riverpod`, one `ConsumerWidget`, and
+> **Flutter guidance.** The app is `flutter create --empty`, `flutter_riverpod`, one `ConsumerWidget`, and
 > one plugin, `sensors_plus`. It is a member of a pub workspace, so you resolve and test it from the top folder.
 > `flutter run` is the only command you run inside the app's folder.
 
@@ -147,7 +147,7 @@ Each put also marks its payload `text/plain`, an *encoding* that travels with th
 they are. The node does the same, in one line of section 6. Chapter 6 covers what encodings are for, and the one
 this guide moves to.
 
-> **If you already know zenoh.** This is zenoh-c's `z_pub`, flag for flag, including the `text/plain` encoding on
+> **Zenoh guidance.** This is zenoh-c's `z_pub`, flag for flag, including the `text/plain` encoding on
 > each put and the `--add-matching-listener` option, which this guide does not use.
 
 > **In VS Code.** Both terminals can be VS Code's. Open the second with the **+** at the top right of the terminal
@@ -383,7 +383,7 @@ cd ../..
 > same build, with the output in the Debug Console, and the red square stops it. Section 10 gives the app an entry in
 > Run and Debug.
 
-> **If you already know Flutter.** Hot reload works as usual, and no step of this guide needs it.
+> **Flutter guidance.** Hot reload works, and no step of this guide needs it.
 
 The app is in the workspace and builds on the emulator. Section 5 writes the test that states the chapter's claim.
 

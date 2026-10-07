@@ -34,7 +34,7 @@ sensorctl                    what you type
 
 Section 3 first writes the program flat, in one file, and section 4 makes the workspace that holds the core.
 
-> **If you already know zenoh.** `sensorctl` is `z_info` with its configuration in code, in a class that tests check,
+> **Zenoh guidance.** `sensorctl` is `z_info` with its configuration in code, in a class that tests check,
 > and its zenoh calls behind one class. Until chapter 5, each of your programs is a peer with multicast scouting and
 > gossip off. The sensor node listens on the loopback, and the collectors connect to it. The zenoh calls go behind one
 > class so that the Flutter app in chapter 2 can share it.

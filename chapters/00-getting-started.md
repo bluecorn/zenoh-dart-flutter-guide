@@ -37,11 +37,11 @@ At the end, the subscriber's terminal shows:
 The publisher's terminal also shows a red line that says `ERROR`, printed after the message was delivered. It comes
 from a known defect in zenoh 1.8.0, and nothing has failed.
 
-> **If you already know zenoh.** The package's examples take zenoh-c's flags, and they behave like zenoh-c's, apart
+> **Zenoh guidance.** The package's examples take zenoh-c's flags, and they behave like zenoh-c's, apart
 > from two things. `z_put`'s default key and value name Dart, and `z_sub` closes its session when you press Ctrl-C.
 > Most of this chapter is tooling. Section 6 is the one that runs zenoh.
 
-> **If you already know Flutter.** There is no app until chapter 2. The Flutter SDK is needed now because it carries
+> **Flutter guidance.** There is no app until chapter 2. The Flutter SDK is needed now because it carries
 > the Dart SDK this guide uses everywhere, pinned per project with `fvm`. If you have not used `fvm`, these are the
 > commands this guide uses: `fvm use` to pin a project's SDK, and `fvm dart` and `fvm flutter` to run its tools.
 
@@ -111,7 +111,7 @@ action is a note beside its step, marked **In VS Code.** Use the latest stable r
 [Flutter extension](https://marketplace.visualstudio.com/items?itemName=Dart-Code.flutter), which brings the Dart
 extension with it. The extensions update themselves.
 
-> **If you already know Flutter.** You may have a Flutter SDK on your `PATH` already. Leave it there if other projects
+> **Flutter guidance.** You may have a Flutter SDK on your `PATH` already. Leave it there if other projects
 > need it.
 
 **5. An Android emulator, an Android phone, and `adb`.** Chapter 2 is the first to use them. `adb` comes in the
@@ -331,7 +331,7 @@ folder someone else can write to could load a library placed there. Chapter 1 sh
 with a line or two more from pub. The guide shows those lines as `⋮` and starts an expected output at the program's
 first words. `…` stands for the part of a line that differs on your machine.
 
-> **If you already know zenoh.** `libzenohc.so` is the library a C program links. The package's examples work with
+> **Zenoh guidance.** `libzenohc.so` is the library a C program links. The package's examples work with
 > zenoh-c's, and the README of its `example/` folder notes that a Dart `z_get` can query a C `z_queryable`.
 
 > **In VS Code.** Open `apps/sensorctl/bin/sensorctl.dart` from the Explorer, and choose **Run** in the line of small
@@ -523,8 +523,8 @@ chapter 4.
 **6. Stop the subscriber** with Ctrl-C in the first terminal. The example catches it, closes its subscriber and its
 session, and ends.
 
-> **If you already know zenoh.** `common_args.dart` is the Dart translation of zenoh-c's `parse_args.h`. The flags
-> are the ones you know, including `--cfg KEY:VALUE` with a JSON5 value.
+> **Zenoh guidance.** `common_args.dart` is the Dart translation of zenoh-c's `parse_args.h`. The flags
+> are zenoh-c's, including `--cfg KEY:VALUE` with a JSON5 value.
 
 > **In VS Code.** Open the second terminal with the **+** at the top right of the terminal panel. A new terminal
 > starts in `zenoh_sensors`, so type `cd apps/sensorctl` in it first. **Terminal › Split Terminal** shows both

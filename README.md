@@ -44,8 +44,8 @@ zenoh.io's documentation [1], and each chapter's reading list gives its page fir
 - **A Linux machine on x86_64, with glibc 2.34 or newer.** `zenoh_dart` ships zenoh's native library for Linux on
   x86_64 and for Android, so the laptop side of this guide needs Linux on x86_64.
 - **Some Dart, and enough Flutter to have finished Flutter's first codelab.** The guide does not teach the languages.
-- **No zenoh needed.** If you do know zenoh already, from C, C++, Python, Rust or ROS 2, the chapters carry short asides
-  that say what is the same here and what is not.
+- **No zenoh needed.** If you do know zenoh already, from C, C++, Python, Rust or ROS 2, look for the short notes marked
+  *Zenoh guidance*. They say what is the same here and what is not.
 - **An Android emulator and an Android phone, from chapter 2 on**, with `adb`. The emulator's system image must be
   `x86_64`, and a phone needs API 24 or newer. The phone runs on a USB cable first, and on your Wi-Fi network from
   chapter 5.
