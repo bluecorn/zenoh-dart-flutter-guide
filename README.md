@@ -14,8 +14,8 @@ You build the two programs by hand, chapter by chapter, and run them against eac
   gyroscope, publishes what it reads, answers the collector's questions and takes its commands.
 
 By chapter 3 the two are talking. The phone publishes what its accelerometer reads, and the program on your laptop
-displays it. From chapter 4, `sensorctl` can also run a sensor node of its own, a stand-in that takes the phone's
-place when no device is at hand. By chapter 5 the phone publishes over your Wi-Fi network.
+displays it. In chapter 4 the phone publishes its gyroscope as well, and the program on your laptop shows both
+sensors. By chapter 5 the phone publishes over your Wi-Fi network.
 
 Both programs follow the same architecture, MVVM, and share one pure-Dart package, which holds their zenoh code. They
 are built with test-driven development, TDD. From chapter 1 on, every behavior starts as a test that fails, and a test
@@ -31,10 +31,10 @@ tools create each project's starting files, and some of the package's example pr
 | 2 | **[The node on your phone](chapters/02-the-node-on-your-phone.md)** | the Flutter app `sensor_node`, in the same workspace, publishing the phone's accelerometer on `sensor/phone/accel` through the core; the chapter's claim tested against real zenoh, and the app built from its screen in; the node run on the emulator and then on a phone over its USB cable, with the package's `z_sub` receiving on the laptop |
 | 3 | **[The collector on your laptop](chapters/03-the-collector-on-your-laptop.md)** | `sensorctl`'s first command, `watch`: a subscription behind `ZenohService` and a repository that turns each payload back into a reading, then a view that redraws one line in place, a view model and the providers; the chapter's claim tested against real zenoh, and the program built from its terminal in; `watch` run against the node on the emulator |
 
-The rest are being written. Chapter 4 gives `sensorctl` a sensor node that needs no device. Chapter 5 takes the phone
-onto your Wi-Fi network, with a router for a network where the laptop cannot reach the phone. The chapters after it
-add one thing each: serialization, queryables, queries, commands, liveliness, quality of service, stopping properly, a
-second view, and scouting and security.
+The rest are being written. Chapter 4 adds the phone's gyroscope, and one key expression with a wildcard brings both
+sensors to `watch`. Chapter 5 takes the phone onto your Wi-Fi network, with a router for a network where the laptop
+cannot reach the phone. The chapters after it add one thing each: serialization, queryables, queries, commands,
+liveliness, quality of service, stopping properly, a second view, and scouting and security.
 
 The chapters take zenoh's ideas in the order the two programs need them. For what each idea is, the reference is
 zenoh.io's documentation [1], and each chapter's reading list gives its page first, then the books' [2], [3].

@@ -1740,9 +1740,8 @@ zenoh_sensors/
                 └── providers.dart
 ```
 
-There are two providers. `sessionSettingsProvider` says that this program is a collector. It is a provider of its own so
-that a test can override it, and so can `simulate`, the sensor node inside this same program from chapter 4.
-`zenohServiceProvider` builds the service from it, and `ref.watch` reads another provider's value.
+There are two providers. `sessionSettingsProvider` says that this program is a collector. `zenohServiceProvider`
+builds the service from it, and `ref.watch` reads another provider's value.
 `ref.onDispose(service.dispose)` ties the session's life to the container's, so when the container is disposed, so is
 the service, and the session closes.
 
@@ -1945,8 +1944,7 @@ phone, in this same workspace, depending on this same `sensor_core`. It opens a 
 
 Chapter 3 builds `watch` and the collector's layers to the left of the service: a repository that owns the key
 expressions, a view model, and the terminal as the view. Each is tested against a fake of the one to its right, and
-`watch` replaces `z_sub`. Chapter 4 adds `simulate`, a second sensor node inside `sensorctl` itself, for when you
-would rather not start a device.
+`watch` replaces `z_sub`. Chapter 4 adds the phone's gyroscope, and `watch` shows both sensors.
 
 ## 11 — Files and versions at the end of this chapter
 

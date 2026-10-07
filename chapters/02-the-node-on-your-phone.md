@@ -1181,7 +1181,7 @@ Run both:
 fvm dart test packages/sensor_core -n 'publishes on'
 ```
 
-Both pass. The app's providers pass `'phone'` in section 9, and chapter 4's node without a device passes `'sim'`.
+Both pass. The app's providers pass `'phone'` in section 9.
 
 **What the tests guarantee:** a repository declares its publication on `sensor/<node>/accel`, built from the node's
 name, which is given once, when the repository is made.
@@ -2807,8 +2807,8 @@ the stream is rebuilt with it, and cancelling the stream closes what the node de
 repository that receives readings, a view model, and the terminal as the view. Each layer is tested against a fake of
 the one below, and `watch` replaces `z_sub`.
 
-Chapter 4 adds `simulate`, a second sensor node inside `sensorctl`, written to the contract `SensorService` set here,
-for when you would rather not start a device. Chapter 5 takes the phone off the cable and onto your Wi-Fi.
+Chapter 4 adds the gyroscope to the contract `SensorService` set here. Chapter 5 takes the phone off the cable and
+onto your Wi-Fi.
 
 The chapter's code is done. Section 13 commits it.
 

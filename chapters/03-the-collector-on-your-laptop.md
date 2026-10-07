@@ -1947,9 +1947,8 @@ place on a terminal, and line by line anywhere else.
 **Each command owns its container.** It builds its providers when it starts and disposes them when it stops, which
 closes what each layer opened.
 
-**What comes next.** Chapter 4 adds `simulate`, a sensor node inside `sensorctl`, for when you would rather not start a
-device. It also lets `watch` take a key expression, so that it can follow two nodes at once. Chapter 5 takes the phone
-off the cable and onto your Wi-Fi.
+**What comes next.** Chapter 4 adds the phone's gyroscope, and `watch` follows both sensors with one key expression.
+Chapter 5 takes the phone off the cable and onto your Wi-Fi.
 
 The chapter's code is done. Section 11 commits it.
 
