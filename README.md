@@ -30,10 +30,10 @@ tools create each project's starting files, and some of the package's example pr
 | 1 | **[A session of your own](chapters/01-a-session-of-your-own.md)** | a session opened with a configuration you wrote, behind `ZenohService`, in a core package that a pub workspace shares with the phone app to come; your first tests, red then green; the program wired by a provider container |
 | 2 | **[The node on your phone](chapters/02-the-node-on-your-phone.md)** | the Flutter app `sensor_node`, in the same workspace, publishing the phone's accelerometer on `sensor/phone/accel` through the core; the chapter's claim tested against real zenoh, and the app built from its screen in; the node run on the emulator and then on a phone over its USB cable, with the package's `z_sub` receiving on the laptop |
 | 3 | **[The collector on your laptop](chapters/03-the-collector-on-your-laptop.md)** | `sensorctl`'s first command, `watch`: a subscription behind `ZenohService` and a repository that turns each payload back into a reading, then a view that redraws one line in place, a view model and the providers; the chapter's claim tested against real zenoh, and the program built from its terminal in; `watch` run against the node on the emulator |
+| 4 | **[A second sensor](chapters/04-a-second-sensor.md)** | the phone's gyroscope beside its accelerometer, each sensor on its own key, `sensor/phone/accel` and `sensor/phone/gyro`; the service hands up the key of each sample, and one key expression with a wildcard, `sensor/phone/*`, brings both sensors to `watch`, a line for each key, as the app shows a block for each; the chapter's claim tested against real zenoh, the data side first and then each program from its view in; both run on the emulator |
 
-The rest are being written. Chapter 4 adds the phone's gyroscope, and one key expression with a wildcard brings both
-sensors to `watch`. Chapter 5 takes the phone onto your Wi-Fi network, with a router for a network where the laptop
-cannot reach the phone. The chapters after it add one thing each: serialization, queryables, queries, commands,
+The rest are being written. Chapter 5 takes the phone onto your Wi-Fi network, with a router for a network where the
+laptop cannot reach the phone. The chapters after it add one thing each: serialization, queryables, queries, commands,
 liveliness, quality of service, stopping properly, a second view, and scouting and security.
 
 The chapters take zenoh's ideas in the order the two programs need them. For what each idea is, the reference is
