@@ -20,7 +20,9 @@ sensors. By chapter 5 the phone publishes over your Wi-Fi network.
 Both programs follow the same architecture, MVVM, and share one pure-Dart package, which holds their zenoh code. They
 are built with test-driven development, TDD. From chapter 1 on, every behavior starts as a test that fails, and a test
 that pins what already works is written green, with the chapter saying so. You type every line of your own code. The
-tools create each project's starting files, and some of the package's example programs are copied in to run.
+tools create each project's starting files, and some of the package's example programs are copied in to run. The
+project the chapters build is public, at <https://github.com/bluecorn/zenoh_sensors>, with a commit at the end of each
+chapter.
 
 ## The chapters
 
@@ -31,9 +33,10 @@ tools create each project's starting files, and some of the package's example pr
 | 2 | **[The node on your phone](chapters/02-the-node-on-your-phone.md)** | the Flutter app `sensor_node`, in the same workspace, publishing the phone's accelerometer on `sensor/phone/accel` through the core; the chapter's claim tested against real zenoh, and the app built from its screen in; the node run on the emulator and then on a phone over its USB cable, with the package's `z_sub` receiving on the laptop |
 | 3 | **[The collector on your laptop](chapters/03-the-collector-on-your-laptop.md)** | `sensorctl`'s first command, `watch`: a subscription behind `ZenohService` and a repository that turns each payload back into a reading, then a view that redraws one line in place, a view model and the providers; the chapter's claim tested against real zenoh, and the program built from its terminal in; `watch` run against the node on the emulator |
 | 4 | **[A second sensor](chapters/04-a-second-sensor.md)** | the phone's gyroscope beside its accelerometer, each sensor on its own key, `sensor/phone/accel` and `sensor/phone/gyro`; the service hands up the key of each sample, and one key expression with a wildcard, `sensor/phone/*`, brings both sensors to `watch`, a line for each key, as the app shows a block for each; the chapter's claim tested against real zenoh, the data side first and then each program from its view in; both run on the emulator |
+| 5 | **[Off the cable](chapters/05-off-the-cable.md)** | the session's settings move from code to zenoh's own configuration files, one per topology for each program, read by a service in each program's data layer, `--config` on `sensorctl` and a build-time name on the app; then the phone over your Wi-Fi network three ways, peer to peer, as a peer that `zenohd` on the laptop introduces to `watch`, and as a client of that router; `adb` over Wi-Fi in place of the cable, the screen kept on, and the package's examples run against `zenohd` first |
 
-The rest are being written. Chapter 5 takes the phone onto your Wi-Fi network, with a router for a network where the
-laptop cannot reach the phone. The chapters after it add one thing each: serialization, queryables, queries, commands,
+The rest are being written. Chapter 6 puts a reading on the wire as bytes, with a sequence number, a timestamp and the
+three values. The chapters after it add one thing each: queryables, queryables, queries, commands,
 liveliness, quality of service, stopping properly, a second view, and scouting and security.
 
 The chapters take zenoh's ideas in the order the two programs need them. For what each idea is, the reference is
@@ -47,10 +50,11 @@ zenoh.io's documentation [1], and each chapter's reading list gives its page fir
 - **No zenoh needed.** If you do know zenoh already, from C, C++, Python, Rust or ROS 2, look for the short notes marked
   *Zenoh guidance*. They say what is the same here and what is not.
 - **An Android emulator and an Android phone, from chapter 2 on**, with `adb`. The emulator's system image must be
-  `x86_64`, and a phone needs API 24 or newer. The phone runs on a USB cable first, and on your Wi-Fi network from
-  chapter 5.
+  `x86_64`, and a phone needs Android 11, API 30, or newer, because chapter 5 reaches it with `adb` over Wi-Fi. The
+  phone runs on a USB cable first, and on your Wi-Fi network from chapter 5.
 - **Everything else you install yourself.** Chapter 0 names each tool with the version it was checked with: git, fvm,
-  the Flutter SDK, which fvm fetches, and VS Code, which is optional. Chapter 0 starts from an empty folder.
+  the Flutter SDK, which fvm fetches, and VS Code, which is optional; chapter 5 names `zenohd`, zenoh's router.
+  Chapter 0 starts from an empty folder.
 
 Chapter 0 ends with the exact versions it was checked with, and each later chapter with the versions that changed.
 
